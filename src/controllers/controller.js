@@ -1,5 +1,6 @@
 const { Pool } = require('pg');
 require('dotenv').config();
+const jwt = require('jsonwebtoken');
 
 const pool = new Pool( {
     host: process.env.DB_HOST,
@@ -8,6 +9,10 @@ const pool = new Pool( {
     database: process.env.DB_DATABASE,
     port: process.env.DB_PORT
 });
+
+//tokens 
+const check = {check: true};
+const token = jwt.sign(check, process.env.JWTKEY, {expiresIn: 1440});
 
 //peticiones
 
@@ -25,13 +30,6 @@ const getIncidenciaById = async (req, res) => {
     res.json(response.rows);
 }
 
-const getAuth = async (req, res) => {
-    const response = await pool.query('SELECT * FROM sys_usuarios ORDER BY id')
-    res.status(200).json(response.rows);
-}
-
-
-
 //put
 
 
@@ -44,6 +42,33 @@ const deleteIncidenciaById = async (req, res) => {
 }
 
 //post
+
+const postAuth = async (req, res) => {
+    const usuario = req.params.usuario;
+    const password = req.params.password;
+
+    const response = await pool.query('SELECT * FROM sys_usuarios WHERE usuario = $1 AND password = $2', [usuario, password]);
+    
+    if(response.rowCount !== 0) {
+        console.log(response);
+        respuesta = response.rows;
+        res.json({
+            status: 200,
+            error_msg: '',
+            mensaje: "Login correcto",
+            token,
+            response: respuesta
+        })
+    } else {
+        res.json({
+            status: 403,
+            error: true,
+            error_msg: "usuario o constraseña incorrectos",
+            mensaje: "error al introducir usuario o contraseña",
+        })
+    }
+}
+
 const createIncidencia = async (req, res) => {
     const {id_inc, via_ent, prioridad, seguimiento, procedencia, estado} = req.body;
 
@@ -61,7 +86,7 @@ const createIncidencia = async (req, res) => {
 module.exports = {
     getIncidencias, 
     getIncidenciaById, 
-    getAuth,
+    postAuth,
     createIncidencia, 
     deleteIncidenciaById
 }

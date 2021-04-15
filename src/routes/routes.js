@@ -6,7 +6,7 @@ const   {
         getIncidencias, 
         getIncidenciaById ,
         createIncidencia,
-        getAuth,
+        postAuth,
         deleteIncidenciaById
         } = require('../controllers/controller.js');
 
@@ -16,7 +16,7 @@ const   {
 //get
 router.get('/incidencias', getIncidencias);
 router.get('/incidencias/:id', getIncidenciaById);
-router.get('/auth', getAuth);
+router.post('/auth/:usuario/:password', postAuth);
 
 //delete
 router.delete('/incidencias/:id', deleteIncidenciaById)

@@ -1,8 +1,6 @@
-// const { response } = require('express');
 const express = require('express');
-const jwt = require('jsonwebtoken');
-
 const app = express();
+
 
 //api web -> montar web con metodos y demás
     app.get("/api", (req, res) => {
@@ -15,6 +13,17 @@ const app = express();
     app.use(express.json());
     //si queremos enviar archivos como fotos y demas extended: true
     app.use(express.urlencoded({extended: false}));
+    
+
+// Configurar cabeceras y cors
+    app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Request-Method');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+    res.header('Allow', 'GET, POST, OPTIONS, PUT, DELETE');
+    next();
+    });
+
 
 
 //ROUTES
