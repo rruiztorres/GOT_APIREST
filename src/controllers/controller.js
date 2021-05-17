@@ -14,19 +14,40 @@ const pool = new Pool( {
 const check = {check: true};
 const token = jwt.sign(check, process.env.JWTKEY, {expiresIn: 1440});
 
-//peticiones
+//TODO: validacion de tokens en peticiones
+
+
+//====================================== peticiones =============================================//
 
 //get
 const getIncidencias = async (req, res) => {
     const response = await pool.query('SELECT * FROM sys_incidencias ORDER BY id')
-    res.status(200).json(response.rows);
+    if(response.rowCount !== 0) {
+        console.log(response);
+        respuesta = response.rows;
+        res.json({
+            status: 200,
+            error: false,
+            error_msg:'',
+            mensaje: "API InciGEO -> Incidencias recuperadas correctamente",
+            response: respuesta,
+            number: response.rowCount,
+        })
+    } else {
+        res.json({
+            status: 403,
+            error: true,
+            error_msg: "ERROR: no se han podido recuperar las incidencias",
+            mensaje: "Fallo en conexión con API InciGEO",
+        })
+    }
+
 }
 
 
 const getIncidenciaById = async (req, res) => {
     const id_inc = req.params.id;
     const response = await pool.query('SELECT * FROM sys_incidencias WHERE id_inc = $1', [id_inc]);
-    console.log(response);
     res.json(response.rows);
 }
 
