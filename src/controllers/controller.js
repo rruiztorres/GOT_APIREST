@@ -73,12 +73,15 @@ const postAuth = async (req, res) => {
     if(response.rowCount !== 0) {
         console.log(response);
         respuesta = response.rows;
+        usrname = respuesta[0].nombre_usuario +' '+respuesta[0].apellidos_usuario;
+
         res.json({
             status: 200,
             error_msg: '',
             mensaje: "Login correcto",
-            token,
-            response: respuesta
+            token, 
+            response: respuesta,
+            usuario: usrname,
         })
     } else {
         res.json({
