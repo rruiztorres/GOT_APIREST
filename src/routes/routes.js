@@ -5,6 +5,7 @@ const router = Router();
 const   { 
         getIncidencias, 
         getIncidenciaById ,
+        compruebaConexion,
         createIncidencia,
         postAuth,
         deleteIncidenciaById
@@ -16,6 +17,7 @@ const   {
 //get
 router.get('/incidencias', getIncidencias);
 router.get('/incidencias/:id', getIncidenciaById);
+router.get('/conexion', compruebaConexion);
 router.post('/auth/:usuario/:password', postAuth);
 
 //delete

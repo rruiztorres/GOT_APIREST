@@ -1,6 +1,7 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
+const { response } = require('express');
 
 const pool = new Pool( {
     host: process.env.DB_HOST,
@@ -49,6 +50,26 @@ const getIncidenciaById = async (req, res) => {
     const id_inc = req.params.id;
     const response = await pool.query('SELECT * FROM sys_incidencias WHERE id_inc = $1', [id_inc]);
     res.json(response.rows);
+}
+
+const compruebaConexion = async (req, res) => {
+    if (pool){
+        const response = 'conexion establecida correctamente'
+        console.log(response);
+        res.json({
+            status:200,
+            error: false,
+            msg: response,
+        })
+    } else {
+        const response = 'no se puede establecer conexion con base de datos'
+        console.log(response);
+        res.json({
+            status:503,
+            error: false,
+            msg: response,
+        })
+    }
 }
 
 //put
@@ -113,7 +134,8 @@ const createIncidencia = async (req, res) => {
 //exports
 module.exports = {
     getIncidencias, 
-    getIncidenciaById, 
+    getIncidenciaById,
+    compruebaConexion, 
     postAuth,
     createIncidencia, 
     deleteIncidenciaById
