@@ -74,6 +74,8 @@ const postAuth = async (req, res) => {
         console.log(response);
         respuesta = response.rows;
         usrname = respuesta[0].nombre_usuario +' '+respuesta[0].apellidos_usuario;
+        defaultRole = respuesta[0].default_role;
+        roles = respuesta[0].roles;
 
         res.json({
             status: 200,
@@ -82,6 +84,8 @@ const postAuth = async (req, res) => {
             token, 
             response: respuesta,
             usuario: usrname,
+            rolDefecto: defaultRole,
+            roles: roles,
         })
     } else {
         res.json({
