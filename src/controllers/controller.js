@@ -54,7 +54,7 @@ const getIncidenciaById = async (req, res) => {
 
 const compruebaConexion = async (req, res) => {
     if (pool){
-        const response = 'conexion establecida correctamente'
+        const response = 'conexion con Base de datos establecida correctamente'
         console.log(response);
         res.json({
             status:200,
