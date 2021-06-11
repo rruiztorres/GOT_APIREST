@@ -45,10 +45,39 @@ const getIncidencias = async (req, res) => {
 
 }
 
-
 const getIncidenciaById = async (req, res) => {
     const id_inc = req.params.id;
     const response = await pool.query('SELECT * FROM sys_incidencias WHERE id_inc = $1', [id_inc]);
+    res.json(response.rows);
+}
+
+const getJobs = async (req, res) => {
+    const response = await pool.query('SELECT * FROM sys_jobs ORDER BY id')
+    if(response.rowCount !== 0) {
+        console.log(response);
+        respuesta = response.rows;
+        res.json({
+            status: 200,
+            error: false,
+            error_msg:'',
+            mensaje: "API InciGEO -> Jobs recuperados correctamente",
+            response: respuesta,
+            number: response.rowCount,
+        })
+    } else {
+        res.json({
+            status: 403,
+            error: true,
+            error_msg: "ERROR: no se han podido recuperar los Jobs",
+            mensaje: "Fallo en conexión con API InciGEO",
+        })
+    }
+
+}
+
+const getJobById = async (req, res) => {
+    const id_inc = req.params.id;
+    const response = await pool.query('SELECT * FROM sys_jobs WHERE id_inc = $1', [id_inc]);
     res.json(response.rows);
 }
 
@@ -135,6 +164,8 @@ const createIncidencia = async (req, res) => {
 module.exports = {
     getIncidencias, 
     getIncidenciaById,
+    getJobs,
+    getJobById,
     compruebaConexion, 
     postAuth,
     createIncidencia, 
