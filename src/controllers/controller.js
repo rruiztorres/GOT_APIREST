@@ -24,7 +24,7 @@ const token = jwt.sign(check, process.env.JWTKEY, {expiresIn: 1440});
 const getIncidencias = async (req, res) => {
     const response = await pool.query('SELECT * FROM sys_incidencias ORDER BY id')
     if(response.rowCount !== 0) {
-        console.log(response);
+        //console.log(response);
         respuesta = response.rows;
         res.json({
             status: 200,
@@ -54,7 +54,7 @@ const getIncidenciaById = async (req, res) => {
 const getJobs = async (req, res) => {
     const response = await pool.query('SELECT * FROM sys_jobs ORDER BY id')
     if(response.rowCount !== 0) {
-        console.log(response);
+        //console.log(response);
         respuesta = response.rows;
         res.json({
             status: 200,
@@ -77,7 +77,7 @@ const getJobs = async (req, res) => {
 
 const getJobById = async (req, res) => {
     const id_inc = req.params.id;
-    const response = await pool.query('SELECT * FROM sys_jobs WHERE id_inc = $1', [id_inc]);
+    const response = await pool.query('SELECT * FROM sys_jobs WHERE id_inc = $1 ORDER BY id_inc, job_id', [id_inc]);
     res.json(response.rows);
 }
 
@@ -101,6 +101,58 @@ const compruebaConexion = async (req, res) => {
     }
 }
 
+const getSerial = async (req, res) => {
+    const type = req.params.type
+    const year = req.params.year;
+    const response = await pool.query('SELECT * FROM sys_serial WHERE serial_type = $1 AND serial_year = $2', [type, year] );
+    res.json(response.rows);
+}
+
+const getViaEnt = async (req, res) => {
+    const response = await pool.query('SELECT * FROM sys_viaentrada' );
+    res.json({
+        status:200,
+        response: response.rows,
+        }
+    );
+}
+
+const getProced = async (req, res) => {
+    const response = await pool.query('SELECT * FROM sys_procedencia' );
+    res.json({
+        status:200,
+        response: response.rows,
+        }
+    );
+}
+
+const getTipoError = async (req, res) => {
+    const response = await pool.query('SELECT * FROM sys_tipos_error' );
+    res.json({
+        status:200,
+        response: response.rows,
+        }
+    );
+}
+
+const getTemasError = async (req, res) => {
+    const response = await pool.query('SELECT * FROM sys_temas_error' );
+    res.json({
+        status:200,
+        response: response.rows,
+        }
+    );
+}
+
+const getAsign = async (req, res) => {
+    const response = await pool.query('SELECT * FROM sys_asignacionjob' );
+    res.json({
+        status:200,
+        response: response.rows,
+        }
+    );
+}
+
 //put
 
 
@@ -121,7 +173,6 @@ const postAuth = async (req, res) => {
     const response = await pool.query('SELECT * FROM sys_usuarios WHERE usuario = $1 AND password = $2', [usuario, password]);
     
     if(response.rowCount !== 0) {
-        console.log(response);
         respuesta = response.rows;
         usrname = respuesta[0].nombre_usuario +' '+respuesta[0].apellidos_usuario;
         defaultRole = respuesta[0].default_role;
@@ -166,6 +217,12 @@ module.exports = {
     getIncidenciaById,
     getJobs,
     getJobById,
+    getSerial,
+    getViaEnt,
+    getProced,
+    getAsign,
+    getTipoError,
+    getTemasError,
     compruebaConexion, 
     postAuth,
     createIncidencia, 
