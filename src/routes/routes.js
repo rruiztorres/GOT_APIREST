@@ -10,9 +10,17 @@ const   {
         getSerial,
         getViaEnt,
         getProced,
-        getAsign,
+        getAsignacionJob,
         getTipoError,
         getTemasError,
+        getDeteccionJob,
+        getArregloJob,
+        getGravedadJob,
+        getTipoBandejaJob,
+        getOperadores,
+
+
+
         compruebaConexion,
         createIncidencia,
         postAuth,
@@ -21,28 +29,33 @@ const   {
 
 
 //definicion rutas
+        //GET
+        router.get('/incidencias', getIncidencias);
+        router.get('/incidencias/:id', getIncidenciaById);
+        router.get('/jobs', getJobs);
+        router.get('/jobs/:id', getJobById);
+        router.get('/serials/:type/:year', getSerial);
+        router.get('/conexion', compruebaConexion);
+        router.get('/viaentrada', getViaEnt);
+        router.get('/procedencia', getProced);
+        router.get('/asignacionJob', getAsignacionJob);
+        router.get('/temasError', getTemasError);
+        router.get('/tiposError', getTipoError);
+        router.get('/deteccionJob', getDeteccionJob);
+        router.get('/arregloJob', getArregloJob);
+        router.get('/gravedadJob', getGravedadJob);
+        router.get('/tipoBandejaJob', getTipoBandejaJob);
+        router.get('/operadores', getOperadores);
 
-//get
-router.get('/incidencias', getIncidencias);
-router.get('/incidencias/:id', getIncidenciaById);
-router.get('/jobs', getJobs);
-router.get('/jobs/:id', getJobById);
-router.get('/serials/:type/:year', getSerial);
-router.get('/conexion', compruebaConexion);
-router.get('/viaentrada', getViaEnt);
-router.get('/procedencia', getProced);
-router.get('/asignacionjob', getAsign);
-router.get('/temasError', getTemasError);
-router.get('/tiposError', getTipoError);
+        //POST
+        router.post('/auth/:usuario/:password', postAuth);
+        router.post('/incidencias', createIncidencia);
 
-router.post('/auth/:usuario/:password', postAuth);
+        //DELTE
+        router.delete('/incidencias/:id', deleteIncidenciaById)
 
 
-//delete
-router.delete('/incidencias/:id', deleteIncidenciaById)
 
-//post
-router.post('/incidencias', createIncidencia);
 
 
 

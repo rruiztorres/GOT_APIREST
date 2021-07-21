@@ -16,6 +16,7 @@ const check = {check: true};
 const token = jwt.sign(check, process.env.JWTKEY, {expiresIn: 1440});
 
 //TODO: validacion de tokens en peticiones
+//TODO: separamos get, post, update...??
 
 
 //====================================== peticiones =============================================//
@@ -144,8 +145,53 @@ const getTemasError = async (req, res) => {
     );
 }
 
-const getAsign = async (req, res) => {
-    const response = await pool.query('SELECT * FROM sys_asignacionjob' );
+const getDeteccionJob = async (req, res) => {
+    const response = await pool.query('SELECT * FROM sys_deteccion_job ORDER BY id' );
+    res.json({
+        status:200,
+        response: response.rows,
+        }
+    );
+}
+
+const getArregloJob = async (req, res) => {
+    const response = await pool.query('SELECT * FROM sys_arreglo_job ORDER BY id' );
+    res.json({
+        status:200,
+        response: response.rows,
+        }
+    );
+}
+
+const getGravedadJob = async (req, res) => {
+    const response = await pool.query('SELECT * FROM sys_gravedad_job ORDER BY id' );
+    res.json({
+        status:200,
+        response: response.rows,
+        }
+    );
+}
+
+const getAsignacionJob = async (req, res) => {
+    const response = await pool.query('SELECT * FROM sys_asignacion_job ORDER BY id' );
+    res.json({
+        status:200,
+        response: response.rows,
+        }
+    );
+}
+
+const getTipoBandejaJob = async (req, res) => {
+    const response = await pool.query('SELECT * FROM sys_tipo_bandeja ORDER BY id' );
+    res.json({
+        status:200,
+        response: response.rows,
+        }
+    );
+}
+
+const getOperadores = async (req, res) => {
+    const response = await pool.query('SELECT * FROM sys_operadores ORDER BY id' );
     res.json({
         status:200,
         response: response.rows,
@@ -220,9 +266,17 @@ module.exports = {
     getSerial,
     getViaEnt,
     getProced,
-    getAsign,
+    getAsignacionJob,
     getTipoError,
     getTemasError,
+    getDeteccionJob,
+    getArregloJob,
+    getGravedadJob,
+    getTipoBandejaJob,
+    getOperadores,
+
+
+
     compruebaConexion, 
     postAuth,
     createIncidencia, 
