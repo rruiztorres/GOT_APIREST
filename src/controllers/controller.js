@@ -48,8 +48,12 @@ const getIncidencias = async (req, res) => {
 
 const getIncidenciaById = async (req, res) => {
     const id_inc = req.params.id;
+    console.log(id_inc);
     const response = await pool.query('SELECT * FROM sys_incidencias WHERE id_inc = $1', [id_inc]);
-    res.json(response.rows);
+    res.json({
+        status: 200,
+        mensaje: response.rows,
+    });
 }
 
 const getJobs = async (req, res) => {
@@ -199,7 +203,32 @@ const getOperadores = async (req, res) => {
     );
 }
 
+const getPrioridad = async (req, res) => {
+    const response = await pool.query('SELECT * FROM sys_prioridad ORDER BY id')
+    res.json({
+        status:200,
+        response: response.rows,
+    })
+}
+
 //put
+const updateIncidencia = async (req, res) => {
+    const incidencia = req.body
+    await pool.query('UPDATE sys_incidencias SET inc_via_ent = $1, inc_prioridad = $2, inc_seguimiento = $3, inc_procedencia = $4, inc_estado = $5, inc_descripcion = $6, inc_email = $7 WHERE id_inc = $8;',[
+        incidencia.via_ent,
+        incidencia.prioridad,
+        incidencia.seguimiento,
+        incidencia.procedencia,
+        incidencia.estado,
+        incidencia.descripcion,
+        incidencia.eMail,
+        incidencia.id_inc,
+    ])
+    res.json({
+        status: 200,
+        mensaje: 'Incidencia ' + incidencia.id_inc + ' Actualizada correctamente',
+    })
+}
 
 
 //delete
@@ -211,7 +240,6 @@ const deleteIncidenciaById = async (req, res) => {
 }
 
 //post
-
 const postAuth = async (req, res) => {
     const usuario = req.params.usuario;
     const password = req.params.password;
@@ -244,17 +272,69 @@ const postAuth = async (req, res) => {
     }
 }
 
-const createIncidencia = async (req, res) => {
-    const {id_inc, via_ent, prioridad, seguimiento, procedencia, estado} = req.body;
+const postIncidencia = async (req, res, error) => {
+    const incidencia = req.body;
+    await pool.query ('INSERT INTO sys_incidencias (id_inc, inc_via_ent, inc_prioridad, inc_seguimiento, inc_procedencia, inc_estado, inc_descripcion, inc_email) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', [
+        incidencia.id_inc,
+        incidencia.via_ent,
+        incidencia.prioridad,
+        incidencia.seguimiento,
+        incidencia.procedencia,
+        incidencia.estado,
+        incidencia.descripcion,
+        incidencia.eMail,
+    ])
 
-        const response = await pool.query('INSERT INTO sys_incidencias (id_inc, via_ent, prioridad, seguimiento, procedencia, estado) VALUES ($1, $2, $3, $4, $5, $6)', [id_inc, via_ent, prioridad, seguimiento, procedencia, estado])
-        console.log(response);
-        res.json ( {
-            message: 'Incidencia creada satisfactoriamente',
-            body: {
-                incidencia: {id_inc, via_ent, prioridad, seguimiento, procedencia, estado}
-            }
-        })
+    res.json({
+        status: 200,
+        mensaje: 'incidencia insertada correctamente',
+    })
+}
+
+const postJobs = async (req, res, error) => {
+    const job = req.body;
+    /*const recGeometry = 'ST_GeomFromText(\'POLYGON' + job.stringGeometry + '\',\'3857\')';*/
+
+    await pool.query('INSERT INTO public.sys_jobs (id_inc, job_desc, job_gravedad, job_detectado, job_arreglar, job_estado, job_id, job_geometria, job_asignacion, job_bandeja, job_operador) VALUES ($1, $2, $3, $4, $5, $6, $7, ST_GeomFromText($8 \,\'3857\'), $9, $10, $11 )',[
+        job.id_inc,
+        job.descripcion,
+        job.gravedad,
+        job.deteccion,
+        job.arreglo,
+        job.estado,
+        job.idJob,
+        job.stringGeometry,
+        job.asignacion,
+        job.bandeja,
+        job.nombreOperador, 
+    ]);
+   
+
+    res.json ({
+        status: 200,
+        mensaje: 'Jobs grabado correctamente'
+    })
+}
+
+const postErrores = async (req, res) => {
+    const error = req.body;
+    /*const recGeometry = 'ST_GeomFromText(\'POLYGON' + job.stringGeometry + '\',\'3857\')';*/
+
+    await pool.query('INSERT INTO public.sys_errores (error_incidencia, error_idError, error_job, error_tema, error_tipo, error_descripcion, error_estado, error_geometria) VALUES ($1, $2, $3, $4, $5, $6, $7, ST_GeomFromText($8 \,\'3857\') )',[
+        error.id_inc,
+        error.idError,
+        error.job,
+        error.selectTema,
+        error.selectTipoError,
+        error.descripcion,
+        error.estado, 
+        error.geometry,
+    ]);
+
+    res.json ({
+        status: 200,
+        mensaje: 'Errores grabado correctamente'
+    })
 }
 
 //exports
@@ -274,11 +354,16 @@ module.exports = {
     getGravedadJob,
     getTipoBandejaJob,
     getOperadores,
+    getPrioridad,
 
-
+    updateIncidencia,
 
     compruebaConexion, 
     postAuth,
-    createIncidencia, 
+    postIncidencia,
+    postJobs,
+    postErrores, 
+
+
     deleteIncidenciaById
 }

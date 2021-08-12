@@ -18,12 +18,18 @@ const   {
         getGravedadJob,
         getTipoBandejaJob,
         getOperadores,
+        getPrioridad,
+
+        postIncidencia,
+        postAuth,
+        postJobs,
+        postErrores,
 
 
+        updateIncidencia,
 
         compruebaConexion,
-        createIncidencia,
-        postAuth,
+
         deleteIncidenciaById,
         } = require('../controllers/controller.js');
 
@@ -46,10 +52,16 @@ const   {
         router.get('/gravedadJob', getGravedadJob);
         router.get('/tipoBandejaJob', getTipoBandejaJob);
         router.get('/operadores', getOperadores);
+        router.get('/prioridad', getPrioridad)
 
         //POST
         router.post('/auth/:usuario/:password', postAuth);
-        router.post('/incidencias', createIncidencia);
+        router.post('/postIncidencia', postIncidencia);
+        router.post('/postJobs', postJobs);
+        router.post('/postErrores', postErrores);
+
+        //PUT
+        router.put('/updateIncidencia', updateIncidencia);
 
         //DELTE
         router.delete('/incidencias/:id', deleteIncidenciaById)

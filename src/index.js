@@ -16,6 +16,9 @@ const morgan = require('morgan');
     //Logger
     app.use(morgan(':method :url :status :res[content-length] - :response-time ms'));
 
+//OTRAS CONFIGURACIONES
+    app.set('json spaces', 3);
+
 // CABECERAS + CORS
     app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
