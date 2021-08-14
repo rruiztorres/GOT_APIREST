@@ -27,10 +27,14 @@ const   {
 
 
         updateIncidencia,
+        updateErrores,
+        updateJobs,
+        updateSerial,
 
         compruebaConexion,
 
         deleteIncidenciaById,
+        getErrorById,
         } = require('../controllers/controller.js');
 
 
@@ -40,7 +44,8 @@ const   {
         router.get('/incidencias/:id', getIncidenciaById);
         router.get('/jobs', getJobs);
         router.get('/jobs/:id', getJobById);
-        router.get('/serials/:type/:year', getSerial);
+        router.get('/errores/:id', getErrorById);
+        router.get('/serials/:type', getSerial);
         router.get('/conexion', compruebaConexion);
         router.get('/viaentrada', getViaEnt);
         router.get('/procedencia', getProced);
@@ -62,6 +67,9 @@ const   {
 
         //PUT
         router.put('/updateIncidencia', updateIncidencia);
+        router.put('/updateErrores', updateErrores);
+        router.put('/updateJobs', updateJobs);
+        router.put('/updateSerial', updateSerial);
 
         //DELTE
         router.delete('/incidencias/:id', deleteIncidenciaById)

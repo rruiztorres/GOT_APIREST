@@ -48,7 +48,6 @@ const getIncidencias = async (req, res) => {
 
 const getIncidenciaById = async (req, res) => {
     const id_inc = req.params.id;
-    console.log(id_inc);
     const response = await pool.query('SELECT * FROM sys_incidencias WHERE id_inc = $1', [id_inc]);
     res.json({
         status: 200,
@@ -81,9 +80,21 @@ const getJobs = async (req, res) => {
 }
 
 const getJobById = async (req, res) => {
-    const id_inc = req.params.id;
-    const response = await pool.query('SELECT * FROM sys_jobs WHERE id_inc = $1 ORDER BY id_inc, job_id', [id_inc]);
-    res.json(response.rows);
+    const id_job = req.params.id;
+    const response = await pool.query('SELECT * FROM sys_jobs WHERE job_id = $1', [id_job]);
+    res.json({
+        status: 200,
+        mensaje: response.rows,
+    });
+}
+
+const getErrorById = async (req, res) => {
+    const id_error = req.params.id;
+    const response = await pool.query('SELECT * FROM sys_errores WHERE error_id = $1', [id_error]);
+    res.json({
+        status: 200,
+        mensaje: response.rows,
+    });
 }
 
 const compruebaConexion = async (req, res) => {
@@ -108,9 +119,11 @@ const compruebaConexion = async (req, res) => {
 
 const getSerial = async (req, res) => {
     const type = req.params.type
-    const year = req.params.year;
-    const response = await pool.query('SELECT * FROM sys_serial WHERE serial_type = $1 AND serial_year = $2', [type, year] );
-    res.json(response.rows);
+    const response = await pool.query('SELECT * FROM sys_serial WHERE serial_type = $1', [type] );
+    res.json({
+        status:200,
+        mensaje: response.rows,
+    });
 }
 
 const getViaEnt = async (req, res) => {
@@ -230,6 +243,60 @@ const updateIncidencia = async (req, res) => {
     })
 }
 
+const updateErrores = async (req, res) => {
+    const error = req.body
+    await pool.query('UPDATE sys_errores SET error_incidencia = $1 error_id = $2 error_job = $3 error_tema = $4 error_tipo = $5 error_descripcion = $6 error_estado = $7 error_geometría = ST_GeomFromText($8 \,\'3857\') error_geometria_json = $9 WHERE error_id = $2;',[
+        error.id_inc,
+        error.idError,
+        error.job,
+        error.tema,
+        error.tipoError,
+        error.descripcion,
+        error.estado, 
+        error.stringGeometry,
+        error.geometry,
+    ])
+    res.json({
+        status: 200,
+        mensaje: 'Errores actualizados correctamente',
+    })
+}
+
+const updateJobs = async (req, res) => {
+    const job = req.body
+    await pool.query('UPDATE sys_jobs SET id_inc = $1 job_desc = $2 job_gravedad = $3 job_detectado = $4 job_arreglar = $5 job_estado = $6 job_id = $7 job_geometria = ST_GeomFromText($8 \,\'3857\') job_asignacion = $9 job_bandeja = $10 job_operador = $11 job_geometria_json = $12)  WHERE job_id = $7;',[
+        job.id_inc,
+        job.descripcion,
+        job.gravedad,
+        job.deteccion,
+        job.arreglo,
+        job.estado,
+        job.idJob,
+        job.stringGeometry,
+        job.asignacion,
+        job.bandeja,
+        job.nombreOperador,
+        job.geometry, 
+    ])
+    res.json({
+        status: 200,
+        mensaje: 'Errores actualizados correctamente',
+    })
+}
+
+const updateSerial = async (req, res) => {
+    const serial = req.body
+    await pool.query('UPDATE sys_serial SET serial_id = $1 WHERE serial_type = $2', [
+        serial.id,
+        serial.type,
+    ]);
+    res.json({
+        status:200,
+        mensaje: 'Actualizado serial',
+    });
+}
+
+
 
 //delete
 const deleteIncidenciaById = async (req, res) => {
@@ -293,9 +360,8 @@ const postIncidencia = async (req, res, error) => {
 
 const postJobs = async (req, res, error) => {
     const job = req.body;
-    /*const recGeometry = 'ST_GeomFromText(\'POLYGON' + job.stringGeometry + '\',\'3857\')';*/
-
-    await pool.query('INSERT INTO public.sys_jobs (id_inc, job_desc, job_gravedad, job_detectado, job_arreglar, job_estado, job_id, job_geometria, job_asignacion, job_bandeja, job_operador) VALUES ($1, $2, $3, $4, $5, $6, $7, ST_GeomFromText($8 \,\'3857\'), $9, $10, $11 )',[
+    console.log(job.stringGeometry);
+    await pool.query('INSERT INTO public.sys_jobs (id_inc, job_desc, job_gravedad, job_detectado, job_arreglar, job_estado, job_id, job_geometria, job_asignacion, job_bandeja, job_operador, job_geometria_json) VALUES ($1, $2, $3, $4, $5, $6, $7, ST_GeomFromText($8 \,\'3857\'), $9, $10, $11, $12 )',[
         job.id_inc,
         job.descripcion,
         job.gravedad,
@@ -307,33 +373,34 @@ const postJobs = async (req, res, error) => {
         job.asignacion,
         job.bandeja,
         job.nombreOperador, 
+        job.geometry,
     ]);
    
-
     res.json ({
         status: 200,
-        mensaje: 'Jobs grabado correctamente'
+        mensaje: 'Jobs grabados correctamente'
     })
 }
 
 const postErrores = async (req, res) => {
     const error = req.body;
-    /*const recGeometry = 'ST_GeomFromText(\'POLYGON' + job.stringGeometry + '\',\'3857\')';*/
 
-    await pool.query('INSERT INTO public.sys_errores (error_incidencia, error_idError, error_job, error_tema, error_tipo, error_descripcion, error_estado, error_geometria) VALUES ($1, $2, $3, $4, $5, $6, $7, ST_GeomFromText($8 \,\'3857\') )',[
+    console.log(error.stringGeometry);
+    await pool.query('INSERT INTO public.sys_errores (error_incidencia, error_id, error_job, error_tema, error_tipo, error_descripcion, error_estado, error_geometria, error_geometria_json) VALUES ($1, $2, $3, $4, $5, $6, $7, ST_GeomFromText($8 \,\'3857\'), $9)',[
         error.id_inc,
         error.idError,
         error.job,
-        error.selectTema,
-        error.selectTipoError,
+        error.tema,
+        error.tipoError,
         error.descripcion,
         error.estado, 
+        error.stringGeometry,
         error.geometry,
     ]);
 
     res.json ({
         status: 200,
-        mensaje: 'Errores grabado correctamente'
+        mensaje: 'Errores grabados correctamente'
     })
 }
 
@@ -343,6 +410,7 @@ module.exports = {
     getIncidenciaById,
     getJobs,
     getJobById,
+    getErrorById,
     getSerial,
     getViaEnt,
     getProced,
@@ -357,6 +425,9 @@ module.exports = {
     getPrioridad,
 
     updateIncidencia,
+    updateErrores,
+    updateJobs,
+    updateSerial,
 
     compruebaConexion, 
     postAuth,
