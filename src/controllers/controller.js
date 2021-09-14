@@ -58,14 +58,12 @@ const getIncidenciaById = async (req, res) => {
 const getJobs = async (req, res) => {
     const response = await pool.query('SELECT * FROM sys_jobs ORDER BY id')
     if(response.rowCount !== 0) {
-        //console.log(response);
-        respuesta = response.rows;
         res.json({
             status: 200,
             error: false,
             error_msg:'',
             mensaje: "API InciGEO -> Jobs recuperados correctamente",
-            response: respuesta,
+            response: response.rows,
             number: response.rowCount,
         })
     } else {
@@ -79,18 +77,18 @@ const getJobs = async (req, res) => {
 
 }
 
-const getJobById = async (req, res) => {
-    const id_job = req.params.id;
-    const response = await pool.query('SELECT * FROM sys_jobs WHERE job_id = $1', [id_job]);
+const getJobByIdInc = async (req, res) => {
+    const id_inc = req.params.id;
+    const response = await pool.query('SELECT * FROM sys_jobs WHERE id_inc = $1', [id_inc]);
     res.json({
         status: 200,
         mensaje: response.rows,
     });
 }
 
-const getErrorById = async (req, res) => {
-    const id_error = req.params.id;
-    const response = await pool.query('SELECT * FROM sys_errores WHERE error_id = $1', [id_error]);
+const getErrorByIdInc = async (req, res) => {
+    const id_inc = req.params.id;
+    const response = await pool.query('SELECT * FROM sys_errores WHERE id_inc = $1', [id_inc]);
     res.json({
         status: 200,
         mensaje: response.rows,
@@ -245,7 +243,7 @@ const updateIncidencia = async (req, res) => {
 
 const updateErrores = async (req, res) => {
     const error = req.body
-    await pool.query('UPDATE sys_errores SET error_incidencia = $1 error_id = $2 error_job = $3 error_tema = $4 error_tipo = $5 error_descripcion = $6 error_estado = $7 error_geometría = ST_GeomFromText($8 \,\'3857\') error_geometria_json = $9 WHERE error_id = $2;',[
+    await pool.query('UPDATE sys_errores SET id_inc = $1 error_id = $2 error_job = $3 error_tema = $4 error_tipo = $5 error_descripcion = $6 error_estado = $7 error_geometría = ST_GeomFromText($8 \,\'3857\') error_geometria_json = $9 WHERE error_id = $2;',[
         error.id_inc,
         error.idError,
         error.job,
@@ -301,9 +299,14 @@ const updateSerial = async (req, res) => {
 //delete
 const deleteIncidenciaById = async (req, res) => {
     const id_inc = req.params.id;
-    const response = await pool.query('DELETE FROM sys_incidencias WHERE id_inc = $1', [id_inc]);
-    console.log(response);
-    res.send ("Incidencia " + req.params.id + ' eliminada satisfactoriamente');
+    
+    await pool.query('DELETE FROM sys_incidencias WHERE id_inc = $1', [id_inc]);
+    await pool.query('DELETE FROM sys_jobs WHERE id_inc = $1', [id_inc]);
+    await pool.query('DELETE FROM sys_errores WHERE id_inc = $1', [id_inc]);
+    res.json ({
+        status:200,
+        mensaje: "Borrado ejecutado satisfactoriamente",
+    });
 }
 
 //post
@@ -379,14 +382,14 @@ const postJobs = async (req, res, error) => {
     res.json ({
         status: 200,
         mensaje: 'Jobs grabados correctamente'
-    })
+    });
 }
 
 const postErrores = async (req, res) => {
     const error = req.body;
 
     console.log(error.stringGeometry);
-    await pool.query('INSERT INTO public.sys_errores (error_incidencia, error_id, error_job, error_tema, error_tipo, error_descripcion, error_estado, error_geometria, error_geometria_json) VALUES ($1, $2, $3, $4, $5, $6, $7, ST_GeomFromText($8 \,\'3857\'), $9)',[
+    await pool.query('INSERT INTO public.sys_errores (id_inc, error_id, error_job, error_tema, error_tipo, error_descripcion, error_estado, error_geometria, error_geometria_json) VALUES ($1, $2, $3, $4, $5, $6, $7, ST_GeomFromText($8 \,\'3857\'), $9)',[
         error.id_inc,
         error.idError,
         error.job,
@@ -409,8 +412,8 @@ module.exports = {
     getIncidencias, 
     getIncidenciaById,
     getJobs,
-    getJobById,
-    getErrorById,
+    getJobByIdInc,
+    getErrorByIdInc,
     getSerial,
     getViaEnt,
     getProced,

@@ -6,7 +6,7 @@ const   {
         getIncidencias, 
         getIncidenciaById ,
         getJobs,
-        getJobById,
+        getJobByIdInc,
         getSerial,
         getViaEnt,
         getProced,
@@ -34,7 +34,7 @@ const   {
         compruebaConexion,
 
         deleteIncidenciaById,
-        getErrorById,
+        getErrorByIdInc,
         } = require('../controllers/controller.js');
 
 
@@ -43,8 +43,8 @@ const   {
         router.get('/incidencias', getIncidencias);
         router.get('/incidencias/:id', getIncidenciaById);
         router.get('/jobs', getJobs);
-        router.get('/jobs/:id', getJobById);
-        router.get('/errores/:id', getErrorById);
+        router.get('/jobs/:id', getJobByIdInc);
+        router.get('/errores/:id', getErrorByIdInc);
         router.get('/serials/:type', getSerial);
         router.get('/conexion', compruebaConexion);
         router.get('/viaentrada', getViaEnt);
