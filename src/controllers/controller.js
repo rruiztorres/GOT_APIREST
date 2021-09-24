@@ -116,8 +116,7 @@ const compruebaConexion = async (req, res) => {
 }
 
 const getSerial = async (req, res) => {
-    const type = req.params.type
-    const response = await pool.query('SELECT * FROM sys_serial WHERE serial_type = $1', [type] );
+    const response = await pool.query('SELECT * FROM sys_serial');
     res.json({
         status:200,
         mensaje: response.rows,

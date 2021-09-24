@@ -45,7 +45,7 @@ const   {
         router.get('/jobs', getJobs);
         router.get('/jobs/:id', getJobByIdInc);
         router.get('/errores/:id', getErrorByIdInc);
-        router.get('/serials/:type', getSerial);
+        router.get('/serials', getSerial);
         router.get('/conexion', compruebaConexion);
         router.get('/viaentrada', getViaEnt);
         router.get('/procedencia', getProced);
