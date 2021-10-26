@@ -14,7 +14,7 @@ const morgan = require('morgan');
     //si queremos enviar archivos como fotos y demas extended: true
     app.use(express.urlencoded({extended: false}));
     //Logger
-    app.use(morgan(':method :url :status :res[content-length] - :response-time ms'));
+    app.use(morgan(':date[web]  |   :remote-addr    |   :method |   :status |   :url    |   :response-time ms'));
 
 //OTRAS CONFIGURACIONES
     app.set('json spaces', 3);
@@ -28,16 +28,26 @@ const morgan = require('morgan');
     next();
     });
 
-//ROUTES
+//ROUTES (routes.js)
     app.use(require('./routes/routes.js'));
 
 //PORT (Si no hay un puerto predefinido utilizamos el 3000)
     const puerto = process.env.puerto || 3000;
     app.listen(puerto, ()=>{
-        console.log('Bienvenido a InciGEO API REST... listo y escuchando puerto ' + puerto)
+        console.log("[morgan] logger ready...")
+        console.log("");
+        console.log('===============================================================')
+        console.log('Bienvenido a GOT API REST...Preparada y escuchando puerto ' + puerto)
+        console.log('Esperando peticiones...')
+        console.log('===============================================================')
+        console.log("");
     });
 
 // HANDLER 404
 app.use((req, res, next) => {
     res.status(404).send('404 Not Found');
 })
+
+//GLOBALS
+const getTransformArrays = require("../src/dist/transformArray");
+global.params = getTransformArrays(); 

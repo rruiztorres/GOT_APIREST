@@ -1,38 +1,45 @@
-const{ Router }= require('express');
+const{ Router } = require('express');
 const router = Router();
 
-//import elementos desde controller.js
-const   { 
-        getIncidencias, 
-        getIncidenciaById ,
-        getJobs,
-        getJobByIdInc,
-        getSerial,
-        getViaEnt,
-        getProced,
-        getAsignacionJob,
-        getTipoError,
-        getTemasError,
-        getDeteccionJob,
-        getArregloJob,
-        getGravedadJob,
-        getTipoBandejaJob,
-        getOperadores,
-        getPrioridad,
 
-        postIncidencia,
+//METODOS DE USUARIO
+const   {
         postAuth,
+        compruebaConexion,
+        } = require('../controllers/userControllers');
+
+//METODOS DE EXPEDIENTES
+const   {
+        postExpediente,
+        getExpedientes,
+        } = require('../controllers/expedienteController');
+
+//METODOS DE JOBS
+const   {
+        getJobParameters,
         postJobs,
-        postErrores,
+        getJobs,
+        } = require('../controllers/jobControllers');
+
+//METODOS DE ERROR 
+const   {
+        getErrorParameters,
+        postErrores, 
+        } = require('../controllers/errorControllers');
+        
+//CARGA COMBINADA JOBS / ERRORES 
+const   {
+        postJobsErrores
+        } = require('../controllers/cargaJobsErrores');   
 
 
+// Metodos antiguos, eliminar
+const   { 
+        getJobByIdInc,
         updateIncidencia,
         updateErrores,
         updateJobs,
         updateSerial,
-
-        compruebaConexion,
-
         deleteIncidenciaById,
         getErrorByIdInc,
         } = require('../controllers/controller.js');
@@ -40,30 +47,20 @@ const   {
 
 //definicion rutas
         //GET
-        router.get('/incidencias', getIncidencias);
-        router.get('/incidencias/:id', getIncidenciaById);
-        router.get('/jobs', getJobs);
+        router.get('/jobs', getJobs);                           //MIGRADO
         router.get('/jobs/:id', getJobByIdInc);
         router.get('/errores/:id', getErrorByIdInc);
-        router.get('/serials', getSerial);
-        router.get('/conexion', compruebaConexion);
-        router.get('/viaentrada', getViaEnt);
-        router.get('/procedencia', getProced);
-        router.get('/asignacionJob', getAsignacionJob);
-        router.get('/temasError', getTemasError);
-        router.get('/tiposError', getTipoError);
-        router.get('/deteccionJob', getDeteccionJob);
-        router.get('/arregloJob', getArregloJob);
-        router.get('/gravedadJob', getGravedadJob);
-        router.get('/tipoBandejaJob', getTipoBandejaJob);
-        router.get('/operadores', getOperadores);
-        router.get('/prioridad', getPrioridad)
+        router.get('/conexion', compruebaConexion);             //MIGRADO
+        router.get('/jobParameters', getJobParameters);         //MIGRADO
+        router.get('/errorParameters', getErrorParameters);     //MIGRADO
+        router.get('/expedientes/', getExpedientes)             //MIGRADO
 
         //POST
-        router.post('/auth/:usuario/:password', postAuth);
-        router.post('/postIncidencia', postIncidencia);
-        router.post('/postJobs', postJobs);
-        router.post('/postErrores', postErrores);
+        router.post('/postJobs', postJobs);                     //MIGRADO
+        router.post('/postErrores', postErrores);               //MIGRADO
+        router.post('/expediente', postExpediente);             //MIGRADO
+        router.post('/auth/:usuario/:password', postAuth);      //MIGRADO
+        router.post('/postJobsErrores', postJobsErrores);       //MIGRADO
 
         //PUT
         router.put('/updateIncidencia', updateIncidencia);
@@ -74,8 +71,10 @@ const   {
         //DELTE
         router.delete('/incidencias/:id', deleteIncidenciaById)
 
-
-
+        
+        
+        
+         
 
 
 
