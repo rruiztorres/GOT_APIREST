@@ -25,10 +25,14 @@ const getJobs = async (req, res) => {
     if (response.rowCount !== 0) {
         for (index in response.rows){
             let resume = response.rows[index].descripcion;
+            let bloqueado = false;
             if (typeof(resume)=='string'){
                 resume = resume.slice(0,40) + '...';
                 response.rows[index].resumen = resume;
             } 
+            if (bloqueado == false){
+                response.rows[index].bloqueado = bloqueado;
+            }
         };
         res.status(201);
         res.json({
@@ -117,6 +121,53 @@ const postJobs = async (req, res, err) => {
     })
 
 }
+
+const updateJobs = async (req, res) => {
+    const job = req.body
+
+    const descripcion = job.descripcion;
+    const idGravedad = transformer("gravedad", job.gravedad_job);
+    const idDeteccion = transformer("deteccion", job.deteccion_job);
+    const idArreglo = transformer("perfil", job.arreglo_job);
+    const geometria = job.geometria;
+    const idTipoBandeja = transformer("tipoBandeja", job.tipo_bandeja);
+    const idAsignacion = transformer("asignacion",job.asignacion_job);
+    const idOperador  = transformer("operador", job.nombre_operador);
+    const idExpediente = transformer("expediente", job.expediente);
+    const geometriaJSON = job.geometria_json;
+    const jobGrande = job.job_grande;
+    const idJob = await database.query ("SELECT id_job FROM got.jobs WHERE job = $1",[job.job])
+
+
+    //Insercion en BD
+    const response = await database.query('UPDATE got.jobs SET descripcion = $1, id_gravedad = $2, id_deteccion = $3, id_arreglo = $4, geometria = ST_GeomFromText($5 \,\'3857\'), id_tipo_bandeja = $6, id_asignacion_job = $7, id_operador = $8, id_expediente = $9, geometria_json = $10, job_grande = $11 WHERE id_job = $12;',[
+         descripcion,
+         idGravedad,
+         idDeteccion,
+         idArreglo,
+         geometria,
+         idTipoBandeja,
+         idAsignacion,
+         idOperador,
+         idExpediente,
+         geometriaJSON,
+         jobGrande,
+         idJob.rows[0].id_job,
+    ])
+
+    if (response.rowCount > 0){
+        res.status(201);
+        res.json({
+            mensaje: `job ${job.job} actualizado correctamente`,
+        })
+    } else {
+        res.status(203);
+        res.json({
+            mensaje: `No se ha encontrado ningún job con el id ${job.job}`,
+        })
+    }
+
+}
     
     
 
@@ -125,4 +176,5 @@ module.exports = {
     getJobs,
     getJobParameters,
     postJobs,
+    updateJobs,
 };

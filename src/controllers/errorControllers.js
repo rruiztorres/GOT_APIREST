@@ -13,12 +13,9 @@ const database = new Pool({
     port: process.env.DB_PORT,
 });
 
-//cuando este completo
-/*
-    //Transformer
-    const transformer = require ("../dist/transformer")
-    transformer('arreglo')
-*/
+//Transformer
+const transformer = require ("../dist/transformer");
+const { response } = require("express");
 
 //=============================================METODOS==================================================//
 
@@ -34,44 +31,59 @@ const getErrorParameters = async (req, res) =>{
 
 };
 
-const postErrores = async (req, res) => {
-    
-    const errores = req.body;
-    console.log (errores);
+const getErrorByIdJob = async (req, res) =>{
+    const idJob = req.params.idJob;
+    const errores = await database.query('SELECT * FROM got.v_errores WHERE job = $1', [ idJob ]);
 
-    /*for (this.index in errores){
-        //PARAMETROS ERROR
-        const idError = null;
-        const job = transformer('gravedad', error[this.index].idJob);
-        const tema = transformer('gravedad', error[this.index].tema);
-        const tipo = transformer('gravedad', error[this.index].tipoError);
-        const descripcion = transformer('gravedad', error[this.index].descripcion);
-        const estado = transformer('gravedad', error[this.index].estado);
-        const geometria = error[this.index].geometria;
-        const geometriaJSON = error[this.index].geometriaJSON;
-        const viaEntrada = transformer('gravedad', error[this.index].viaEntrada);
-
-        await database.query('INSERT INTO got.errores (id_job, error, id_tema_error, id_tipo_error, descripcion, id_estado_error, geometria_json, geometria, id_via_ent) VALUES ($1, $2, $3, $4, $5, $6, $7, ST_GeomFromText($8 \,\'3857\'), $9)',[
-            job,
-            idError,
-            tema,
-            tipo,
-            descripcion,
-            estado,
-            geometriaJSON,
-            geometria,
-            viaEntrada
-        ]);
+    if (errores.rowCount > 0) {
+        res.status(201);
+        res.json({
+            errores: errores.rows,
+        })
+    } else {
+        res.status(203);
+        res.json({
+            mensaje: `No se encuentran errores asociados al job ${idJob}`,
+        })
     }
+};
 
-        res.json ({
-            status: 200,
-            mensaje: 'Errores grabados correctamente'
-        })*/
+const updateError = async (req, res) => {
+    const error = req.body;
+    console.log(error)
+
+        const descripcion = error.descripcion;
+        const idEstado = transformer('estadosErrores', error.estado);
+        const idTipo = transformer('tiposError', error.tipo);
+        const idTema = transformer('temasError', error.tema);
+        const geometria = error.geometria;
+        const geometriaJSON = error.geometriaJSON;
+        const idViaEnt = transformer('viaEntrada', error.viaEnt);
+        const idError = error.error;
+
+        //Insercion en BD
+        const response = await database.query('UPDATE got.errores SET geometria = ST_GeomFromText($1 \,\'3857\') WHERE error = $2;',[
+            geometria,
+            idError
+        ])
+
+        if (response.rowCount > 0){
+            res.status(201);
+            res.json({
+                mensaje: `job ${error.error} actualizado correctamente`,
+            })
+        } else {
+            res.status(203);
+            res.json({
+                mensaje: `No se ha encontrado ningún job con el id ${error.error}`,
+            })
+        }
 }
+
 
 //======================================================================================================//
 module.exports = {
     getErrorParameters,
-    postErrores,
+    getErrorByIdJob,
+    updateError,
 };

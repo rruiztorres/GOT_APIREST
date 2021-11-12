@@ -72,14 +72,6 @@ module.exports = function (nameObjeto, value) {
         }
     }
 
-    else if (nameObjeto === 'idJobs') {
-        for (this.index in idJobs) {
-            if (idJobs[this.index].job == value){
-                return idJobs[this.index].id_job
-            }
-        }
-    }
-
     // ERRORES 
     else if (nameObjeto === 'estadosErrores') {
         for (this.index in estadosErrores) {

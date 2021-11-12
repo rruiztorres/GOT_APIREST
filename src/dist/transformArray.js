@@ -68,12 +68,6 @@ module.exports = function getTransformArrays() {
     }
     getErrores();
     
-    const getIdJob = async () => {
-        const response = await database.query ('SELECT id_job, job FROM got.v_jobs')
-        global.idJobs = response.rows
-    }
-    getIdJob();
-
     //ERRORES
     const getEstadoErrores = async () => {
         const response = await database.query ('SELECT id_estado_error, estado FROM got.estados_error')

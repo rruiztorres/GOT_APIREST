@@ -19,12 +19,14 @@ const   {
         getJobParameters,
         postJobs,
         getJobs,
+        updateJobs,
         } = require('../controllers/jobControllers');
 
 //METODOS DE ERROR 
 const   {
         getErrorParameters,
-        postErrores, 
+        getErrorByIdJob,
+        updateError,
         } = require('../controllers/errorControllers');
         
 //CARGA COMBINADA JOBS / ERRORES 
@@ -32,50 +34,51 @@ const   {
         postJobsErrores
         } = require('../controllers/cargaJobsErrores');   
 
+//CAMBIO ESTADOS JOBS / ERRORES
+const   {
+        postCambioEstadosJob,
+        postCambioEstadosErrores
+        } = require('../controllers/cambioEstados');
+
 
 // Metodos antiguos, eliminar
 const   { 
-        getJobByIdInc,
         updateIncidencia,
-        updateErrores,
-        updateJobs,
         updateSerial,
         deleteIncidenciaById,
-        getErrorByIdInc,
+
         } = require('../controllers/controller.js');
 
 
 //definicion rutas
         //GET
-        router.get('/jobs', getJobs);                           //MIGRADO
-        router.get('/jobs/:id', getJobByIdInc);
-        router.get('/errores/:id', getErrorByIdInc);
-        router.get('/conexion', compruebaConexion);             //MIGRADO
-        router.get('/jobParameters', getJobParameters);         //MIGRADO
-        router.get('/errorParameters', getErrorParameters);     //MIGRADO
-        router.get('/expedientes/', getExpedientes)             //MIGRADO
+        router.get('/jobs', getJobs);                                   //MIGRADO
+        router.get('/conexion', compruebaConexion);                     //MIGRADO
+        router.get('/jobParameters', getJobParameters);                 //MIGRADO
+        router.get('/errorParameters', getErrorParameters);             //MIGRADO
+        router.get('/expedientes/', getExpedientes);                    //MIGRADO
+        router.get('/error/:idJob', getErrorByIdJob);                   //MIGRADO 
 
         //POST
-        router.post('/postJobs', postJobs);                     //MIGRADO
-        router.post('/postErrores', postErrores);               //MIGRADO
-        router.post('/expediente', postExpediente);             //MIGRADO
-        router.post('/auth/:usuario/:password', postAuth);      //MIGRADO
-        router.post('/postJobsErrores', postJobsErrores);       //MIGRADO
+        router.post('/postJobs', postJobs);                             //MIGRADO
+        router.post('/expediente', postExpediente);                     //MIGRADO
+        router.post('/auth/:usuario/:password', postAuth);              //MIGRADO
+        router.post('/postJobsErrores', postJobsErrores);               //MIGRADO
+        router.post('/cambioEstadosJob', postCambioEstadosJob);         //MIGRADO
+        router.post('/cambioEstadosError', postCambioEstadosErrores);   //MIGRADO
 
         //PUT
+        router.put('/updateJob', updateJobs)                            //MIGRADO
+        router.put('/updateError', updateError)                         //MIGRADO
+
+
+
         router.put('/updateIncidencia', updateIncidencia);
-        router.put('/updateErrores', updateErrores);
-        router.put('/updateJobs', updateJobs);
         router.put('/updateSerial', updateSerial);
+        
 
         //DELTE
         router.delete('/incidencias/:id', deleteIncidenciaById)
 
         
-        
-        
-         
-
-
-
 module.exports = router;
