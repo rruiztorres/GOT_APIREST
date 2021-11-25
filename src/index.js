@@ -15,6 +15,11 @@ const morgan = require('morgan');
     app.use(express.urlencoded({extended: false}));
     //Logger
     app.use(morgan(':date[web]  |   :remote-addr    |   :method |   :status |   :url    |   :response-time ms'));
+    //Manejo errores
+    app.use(function errorHandler(err, req, res, next) {
+        res.status(500);
+        res.render('error', { error: err });
+    });
 
 //OTRAS CONFIGURACIONES
     app.set('json spaces', 3);

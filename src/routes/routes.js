@@ -25,8 +25,10 @@ const   {
 //METODOS DE ERROR 
 const   {
         getErrorParameters,
+        getErrorByEstado,
         getErrorByIdJob,
         updateError,
+        deleteError,
         } = require('../controllers/errorControllers');
         
 //CARGA COMBINADA JOBS / ERRORES 
@@ -57,6 +59,7 @@ const   {
         router.get('/jobParameters', getJobParameters);                 //MIGRADO
         router.get('/errorParameters', getErrorParameters);             //MIGRADO
         router.get('/expedientes/', getExpedientes);                    //MIGRADO
+        router.get('/erroresEstado', getErrorByEstado)                  //MIGRADO
         router.get('/error/:idJob', getErrorByIdJob);                   //MIGRADO 
 
         //POST
@@ -70,15 +73,10 @@ const   {
         //PUT
         router.put('/updateJob', updateJobs)                            //MIGRADO
         router.put('/updateError', updateError)                         //MIGRADO
-
-
-
-        router.put('/updateIncidencia', updateIncidencia);
         router.put('/updateSerial', updateSerial);
         
-
         //DELTE
-        router.delete('/incidencias/:id', deleteIncidenciaById)
+        router.delete('/deleteError', deleteError)                      //MIGRADO
 
         
 module.exports = router;
