@@ -46,7 +46,7 @@ const getJobs = async (req, res) => {
             });
         }
     } catch(error){
-        console.error(error)
+        console.error("getJobs -> ", error)
     }
 };
 
@@ -71,7 +71,7 @@ const getJobParameters = async (req, res) => {
             operador: operador.rows
         })
     } catch(error){
-        console.error(error)
+        console.error("getJobParameters -> ", error)
     }
 
 }
@@ -85,36 +85,21 @@ const postJobs = async (req, res) => {
         for (this.index in job){
             //SERIAL (los años se asignan automáticamente de acuerdo a la fecha del sistema)
             let newId = await database.query ("SELECT to_char(serial_id + 1, 'fm000000') FROM got.serial;")
-            let idJob = year + '_' + newId.rows[0].to_char;
-
-            //PARAMETROS JOB
-            const descripcion = job[this.index].descripcion;
-            const gravedad = transformer('gravedad', job[this.index].gravedad);
-            const deteccion = transformer('deteccion', job[this.index].detectado);
-            const perfil = transformer('perfil', job[this.index].perfil);
-            const estado = transformer('estadosJobs', job[this.index].estado);
-            const geometria = job[this.index].geometria;
-            const geometriaJSON = job[this.index].geometriaJSON; 
-            const asignacion = transformer('asignacion', job[this.index].asignar);
-            const bandeja = transformer('tipoBandeja', job[this.index].tipoBandeja);
-            const operador = transformer('operador', job[this.index].operador);
-            const expediente = transformer('expediente', job[this.index].expediente);
-
 
             //INSERCION
             const response = await database.query("INSERT INTO got.jobs (job, descripcion, id_gravedad, id_deteccion, id_arreglo, id_estado_job, geometria, geometria_json, id_tipo_bandeja, id_asignacion_job, id_operador, id_expediente) VALUES ($1, $2, $3, $4, $5, $6, ST_GeomFromText($7 \,\'3857\'), $8, $9, $10, $11, $12 )",[
-                idJob,
-                descripcion,
-                gravedad,
-                deteccion,
-                perfil,
-                estado,
-                geometria,
-                geometriaJSON,
-                bandeja,
-                asignacion,
-                operador,
-                expediente,
+                year + '_' + newId.rows[0].to_char,                     //job
+                job[this.index].descripcion,                            //descripcion
+                transformer('gravedad', job[this.index].gravedad),      //id_gravedad
+                transformer('deteccion', job[this.index].detectado),    //id_deteccion
+                transformer('perfil', job[this.index].perfil),          //id_arreglo
+                transformer('estadosJobs', job[this.index].estado),     //id_estado_job
+                job[this.index].geometria,                              //geometria
+                job[this.index].geometriaJSON,                          //geometria_json
+                transformer('asignacion', job[this.index].asignar),     //id_tipo_bandeja
+                transformer('tipoBandeja', job[this.index].tipoBandeja),//id_asignacion_job
+                transformer('operador', job[this.index].operador),      //id_operador
+                transformer('expediente', job[this.index].expediente),  //id_expediente
                 ]);
 
             //Graba el idJob en la BD. En la siguiente iteración se le sumará 1.
@@ -129,13 +114,13 @@ const postJobs = async (req, res) => {
             creados: arrayCreados,
         })
     } catch(error){
-        console.error(error)
+        console.error("postJobs -> ", error)
     }
 
 }
 
 const updateJobs = async (req, res) => {
-    try{
+    try{        
         const actualizarJob = req.body[0]
         const descripcion = actualizarJob.descripcion;
         const idGravedad = transformer("gravedad", actualizarJob.gravedad_job);
@@ -178,7 +163,7 @@ const updateJobs = async (req, res) => {
             })
         }
     } catch (error){
-        console.error(error)
+        console.error("updateJobs -> ", error)
     };
 }
     

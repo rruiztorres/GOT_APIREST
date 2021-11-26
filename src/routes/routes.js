@@ -29,6 +29,7 @@ const   {
         getErrorByIdJob,
         updateError,
         deleteError,
+        postError,
         } = require('../controllers/errorControllers');
         
 //CARGA COMBINADA JOBS / ERRORES 
@@ -69,6 +70,7 @@ const   {
         router.post('/postJobsErrores', postJobsErrores);               //MIGRADO
         router.post('/cambioEstadosJob', postCambioEstadosJob);         //MIGRADO
         router.post('/cambioEstadosError', postCambioEstadosErrores);   //MIGRADO
+        router.post('/postError', postError)                        //MIGRADO
 
         //PUT
         router.put('/updateJob', updateJobs)                            //MIGRADO
