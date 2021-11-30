@@ -60,7 +60,7 @@ const   {
         router.get('/jobParameters', getJobParameters);                 //MIGRADO
         router.get('/errorParameters', getErrorParameters);             //MIGRADO
         router.get('/expedientes/', getExpedientes);                    //MIGRADO
-        router.get('/erroresEstado', getErrorByEstado)                  //MIGRADO
+        router.get('/erroresEstado/:estado', getErrorByEstado)          //MIGRADO
         router.get('/error/:idJob', getErrorByIdJob);                   //MIGRADO 
 
         //POST

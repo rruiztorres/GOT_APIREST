@@ -36,26 +36,25 @@ const getErrorParameters = async (req, res) =>{
 
 }
 
-const getErrorByEstado = async (req, res) => {
-    try {
+const getErrorByEstado = async (req, res) =>{
+    try{
         const estado = req.params.estado;
-        const errores = await database.query('SELECT * FROM got.v_errores WHERE estado = $1', [ estado ])
+        const errores = await database.query('SELECT * FROM got.v_errores WHERE estado = $1', [ estado ]);
 
-        if (errores.rowCount > 0){
+        if (errores.rowCount > 0) {
             res.status(201);
             res.json({
-                mensaje: `Errores correspondientes a estado ${estado}`
+                errores: errores.rows,
             })
         } else {
             res.status(203);
             res.json({
-                mensaje: `No se encontraron errores con estado ${estado}`
+                mensaje: `No se encuentran errores asociados al estado ${estado}`,
             })
         }
-    } catch (error){
-        console.log("getErrorByEstado -> ", error)
+    } catch(error){
+        console.log("getErrorByIdJob -> ", error)
     }
-
 }
 
 const getErrorByIdJob = async (req, res) =>{
@@ -142,14 +141,15 @@ const postError = async (req, res) => {
         const job = (await database.query('SELECT job FROM got.jobs WHERE id_job = $1',[error.job])).rows[0].job;
 
         //obtener ultimo numero de error grabado 
-        let lastError = (await database.query('SELECT error FROM got.v_errores WHERE job = $1', [job]).rows)
-        if (lastError == undefined){
+        let lastError = (await database.query('SELECT error FROM got.v_errores WHERE job = $1 ORDER BY error DESC', [job]))
+
+        if (lastError.rowCount == 0){
+            //No existen errores previos almacenados
             newIdError = job + '_E' + 1;
-            console.log(newIdError)
         } else {
-            lastError = parseInt(lastError.substr(13,1))+1;
-            newIdError = job + '_E' + lastError;
-            console.log(newIdError)
+            idError = lastError.rows[0].error;
+            lastError = parseInt(idError.substr(13,1));
+            newIdError = job + '_E' + (lastError + 1);
         }
         
         //Asignamos idError al objeto error actual
