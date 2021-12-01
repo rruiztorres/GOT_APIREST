@@ -79,30 +79,38 @@ const getErrorByIdJob = async (req, res) =>{
 }
 
 const updateError = async (req, res) => {
+    let ejecucionCode = 0;
+    let errores = req.body;
     try{
-        const error = req.body;
-        //Actualización en BD
-        const response = await database.query('UPDATE got.errores SET id_job = $1, id_tema_error = $2, id_tipo_error = $3, descripcion = $4, id_estado_error = $5, geometria = ST_GeomFromText($6 \,\'3857\'), id_via_ent = $7, geometria_json = $8 WHERE error = $9;',[
-            error.job,                                      //id_job
-            transformer('temasError', error.tema_error),    //id_tema_error
-            transformer('tiposError', error.tipo_error),    //id_tipo_error
-            error.descripcion,                              //descripcion
-            transformer('estadosErrores', error.estado),    //id_estado
-            error.geometria,                                //geometria
-            transformer('viaEntrada', error.via_ent),       //id_via_ent
-            error.geometria_json,                           //geometria_json
-            error.error                                     //error
-        ])
-        //Respuestas a cliente
-        if (response.rowCount > 0){
+        for (this.index in errores){
+            let error = errores[this.index];
+            //Actualización en BD
+            const response = await database.query('UPDATE got.errores SET id_job = $1, id_tema_error = $2, id_tipo_error = $3, descripcion = $4, id_estado_error = $5, geometria = ST_GeomFromText($6 \,\'3857\'), id_via_ent = $7, geometria_json = $8 WHERE error = $9;',[
+                error.job,                                      //id_job
+                transformer('temasError', error.tema_error),    //id_tema_error
+                transformer('tiposError', error.tipo_error),    //id_tipo_error
+                error.descripcion,                              //descripcion
+                transformer('estadosErrores', error.estado),    //id_estado
+                error.geometria,                                //geometria
+                transformer('viaEntrada', error.via_ent),       //id_via_ent
+                error.geometria_json,                           //geometria_json
+                error.error                                     //error
+            ])
+            //Respuestas a cliente
+            if (response.rowCount == 0){
+                ejecucionCode = 1;
+            } 
+        }
+        //Respuesta a cliente
+        if (ejecucionCode == 0){
             res.status(201);
             res.json({
-                mensaje: `job ${error.error} actualizado correctamente`,
+                mensaje: `jobs actualizados correctamente`,
             })
         } else {
             res.status(203);
             res.json({
-                mensaje: `No se ha encontrado ningún job con el id ${error.error}`,
+                mensaje: `Ha ocurrido un error inesperado`,
             })
         }
     } catch (error){
@@ -135,44 +143,48 @@ const deleteError = async (req, res) => {
 const postError = async (req, res) => {
     try{
         let ejecucionCode = 0;
-        const error = req.body
+        let errores = req.body 
         
-        //obtener numero job
-        const job = (await database.query('SELECT job FROM got.jobs WHERE id_job = $1',[error.job])).rows[0].job;
+        for (this.index in errores){
+            let error = errores[this.index];
 
-        //obtener ultimo numero de error grabado 
-        let lastError = (await database.query('SELECT error FROM got.v_errores WHERE job = $1 ORDER BY error DESC', [job]))
+            //obtener numero job
+            const job = (await database.query('SELECT job FROM got.jobs WHERE id_job = $1',[error.job])).rows[0].job;
 
-        if (lastError.rowCount == 0){
-            //No existen errores previos almacenados
-            newIdError = job + '_E' + 1;
-        } else {
-            idError = lastError.rows[0].error;
-            lastError = parseInt(idError.substr(13,1));
-            newIdError = job + '_E' + (lastError + 1);
+            //obtener ultimo numero de error grabado 
+            let lastError = (await database.query('SELECT error FROM got.v_errores WHERE job = $1 ORDER BY error DESC', [job]))
+
+            if (lastError.rowCount == 0){
+                //No existen errores previos almacenados
+                newIdError = job + '_E' + 1;
+            } else {
+                idError = lastError.rows[0].error;
+                lastError = parseInt(idError.substr(13,1));
+                newIdError = job + '_E' + (lastError + 1);
+            }
+            
+            //Asignamos idError al objeto error actual
+            error.error = newIdError
+            
+            //Insertamos en base de datos
+            const insertErrorBD = await database.query('INSERT INTO got.errores (id_job, error, id_tema_error, id_tipo_error, descripcion, id_estado_error, geometria, id_via_ent, geometria_json) VALUES ($1, $2, $3, $4, $5, $6, ST_GeomFromText($7 \,\'3857\'), $8, $9)', [
+                error.job,                                    //id_job
+                error.error,                                  //error
+                transformer('temasError', error.tema_error),  //id_tema_error
+                transformer('tiposError', error.tipo_error),  //id_tipo_error
+                error.descripcion,                            //descripcion
+                transformer('estadosErrores', error.estado),  //id_estado_error
+                error.geometria,                              //geometria
+                transformer('viaEntrada', error.via_ent),     //id_via_ent
+                error.geometria_json,                         //geometria_json
+            ])
+
+            //Comprueba insercion correcta
+            if (insertErrorBD.rowCount == 0){
+                ejecucionCode = 1;
+                this.errorIncorrecto[this.index] = newIdError;
+            } 
         }
-        
-        //Asignamos idError al objeto error actual
-        error.error = newIdError
-        
-        //Insertamos en base de datos
-        const insertErrorBD = await database.query('INSERT INTO got.errores (id_job, error, id_tema_error, id_tipo_error, descripcion, id_estado_error, geometria, id_via_ent, geometria_json) VALUES ($1, $2, $3, $4, $5, $6, ST_GeomFromText($7 \,\'3857\'), $8, $9)', [
-            error.job,                                    //id_job
-            error.error,                                  //error
-            transformer('temasError', error.tema_error),  //id_tema_error
-            transformer('tiposError', error.tipo_error),  //id_tipo_error
-            error.descripcion,                            //descripcion
-            transformer('estadosErrores', error.estado),  //id_estado_error
-            error.geometria,                              //geometria
-            transformer('viaEntrada', error.via_ent),     //id_via_ent
-            error.geometria_json,                         //geometria_json
-        ])
-
-        //Comprueba insercion correcta
-        if (insertErrorBD.rowCount == 0){
-            ejecucionCode = 1;
-            this.errorIncorrecto[this.index] = newIdError;
-        } 
 
         //respuesta al cliente
         if (ejecucionCode == 0){
@@ -180,7 +192,7 @@ const postError = async (req, res) => {
             res.status(201);
             res.json({
                 mensaje: 'Errores almacenados correctamente',
-                error: error,
+                errores: errores,
             })
         } else {
             //error en alguna insercion
@@ -190,6 +202,7 @@ const postError = async (req, res) => {
                 errores: this.errorIncorrecto,
             })
         }
+
     } catch(error){
         console.log("metodo postErrores -> ", error)
     }
