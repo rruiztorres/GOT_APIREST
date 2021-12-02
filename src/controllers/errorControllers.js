@@ -39,6 +39,7 @@ const getErrorParameters = async (req, res) =>{
 const getErrorByEstado = async (req, res) =>{
     try{
         const estado = req.params.estado;
+        console.log(estado)
         const errores = await database.query('SELECT * FROM got.v_errores WHERE estado = $1', [ estado ]);
 
         if (errores.rowCount > 0) {

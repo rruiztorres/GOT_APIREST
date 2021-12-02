@@ -24,8 +24,8 @@ const pointInPolygon = require("point-in-polygon");
 //=============================================METODOS==================================================//
 const postJobsErrores = async (req, res) => {
     try{
-        const arrayJobsCreados = [];
-        const arrayErroresCreados = [];
+        let arrayJobsCreados = [];
+        let arrayErroresEvaluados = [];
         const jobsRecibidos = req.body.jobs;
         const errores = req.body.errores;
         const year = new Date().getFullYear();
@@ -125,7 +125,7 @@ const postJobsErrores = async (req, res) => {
 
                     //Por cada nuevo job reinicia el contador de errores (E1, E2, etc)
                     let erroresEnJob = 1;
-
+                    
                     if (errores != null) {
                         //PARAMETROS ERRORES (es necesario grabar antes los jobs ya que la asignacion se hace por id_job)
                         for (this.errorIndex in errores) {
@@ -152,10 +152,12 @@ const postJobsErrores = async (req, res) => {
                                 erroresEnJob ++;
                                 //Creamos objeto para devolver errores y jobs creados con sus asociaciones correspondientes.
                                 let errorCreado = {
+                                    idInterno: errores[this.errorIndex].id,
+                                    asignado: true,
                                     idError,
                                     job: job,
                                 };
-                                arrayErroresCreados.push(errorCreado);
+                                arrayErroresEvaluados.push(errorCreado);
                                 
                                 //INSERTAMOS ERROR EN BD
                                 const responseError = await database.query("INSERT INTO got.errores (id_job, error, id_tema_error, id_tipo_error, descripcion, id_estado_error, geometria_json, geometria, id_via_ent) VALUES ($1, $2, $3, $4, $5, $6, $7, ST_GeomFromText($8 \,\'3857\'), $9)",[
@@ -170,7 +172,30 @@ const postJobsErrores = async (req, res) => {
                                     idViaEnt
                                 ]);
                                 
-                            } 
+                            } else {
+                                //El error está fuera del job
+                                let errorCreado = {
+                                    idInterno: errores[this.errorIndex].id,
+                                    asignado: false,
+                                    idError: null,
+                                    job: null
+                                };
+
+                                arrayErroresEvaluados.push(errorCreado);
+
+                                //INSERTAMOS ERROR EN BD
+                                const responseError = await database.query("INSERT INTO got.errores (id_job, error, id_tema_error, id_tipo_error, descripcion, id_estado_error, geometria_json, geometria, id_via_ent) VALUES ($1, $2, $3, $4, $5, $6, $7, ST_GeomFromText($8 \,\'3857\'), $9)",[
+                                    null,
+                                    null,
+                                    tema_error,
+                                    tipo_error,
+                                    descripcionErr,
+                                    estado,
+                                    geometriaJSON,
+                                    geometria,
+                                    idViaEnt
+                                ]);
+                            }
                         };
                         //Reiniciamos contador errores detectados en job
                         erroresEnJob = 1;
@@ -178,14 +203,14 @@ const postJobsErrores = async (req, res) => {
                 } 
 
                 //RESPUESTAS JOBS + ERRORES
-                if (arrayJobsCreados.length != 0 || arrayErroresCreados != 0) {
+                if (arrayJobsCreados.length != 0 || arrayErroresDentroJob != 0) {
                     res.status(201);
                     res.json({
-                        tipo: "Errores con asignacion a jobs",
                         jobs: arrayJobsCreados,
-                        errores: arrayErroresCreados,
+                        errores: arrayErroresEvaluados,
                     })
-                } else {
+                }
+                else {
                     res.status(203);
                     res.json({
                         respuesta: 'No se han encontrado datos que guardar'

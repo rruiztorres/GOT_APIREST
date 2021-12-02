@@ -43,16 +43,6 @@ const   {
         postCambioEstadosErrores
         } = require('../controllers/cambioEstados');
 
-
-// Metodos antiguos, eliminar
-const   { 
-        updateIncidencia,
-        updateSerial,
-        deleteIncidenciaById,
-
-        } = require('../controllers/controller.js');
-
-
 //definicion rutas
         //GET
         router.get('/jobs', getJobs);                                   //MIGRADO
@@ -75,7 +65,6 @@ const   {
         //PUT
         router.put('/updateJob', updateJobs)                            //MIGRADO
         router.put('/updateError', updateError)                         //MIGRADO
-        router.put('/updateSerial', updateSerial);
         
         //DELTE
         router.delete('/deleteError', deleteError)                      //MIGRADO
