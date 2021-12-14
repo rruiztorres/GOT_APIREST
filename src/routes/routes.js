@@ -16,6 +16,7 @@ const   {
 
 //METODOS DE JOBS
 const   {
+        getJobExtent,
         getJobParameters,
         postJobs,
         getJobs,
@@ -45,6 +46,7 @@ const   {
 
 //definicion rutas
         //GET
+        router.get('/jobExtent/:job', getJobExtent)                     //MIGRADO
         router.get('/jobs', getJobs);                                   //MIGRADO
         router.get('/conexion', compruebaConexion);                     //MIGRADO
         router.get('/jobParameters', getJobParameters);                 //MIGRADO

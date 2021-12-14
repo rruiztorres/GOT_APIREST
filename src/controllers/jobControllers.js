@@ -20,6 +20,31 @@ const { response } = require("express");
 
 //=============================================METODOS==================================================//
 
+const getJobExtent = async (req,res) => {
+    try{
+        const job = req.params.job;
+        const dataExtent = await database.query('SELECT ST_AsText(ST_Envelope(geometria)) FROM got.v_jobs WHERE job = $1', [job])
+        const dataCentroid = await database.query('SELECT ST_AsText(ST_Centroid(geometria)) FROM got.v_jobs WHERE job = $1', [job])
+        
+        if (dataExtent.rows.length > 0 && dataCentroid.rows.length > 0){
+            const extent = dataExtent.rows[0].st_astext;
+            const centroid = dataCentroid.rows[0].st_astext;
+            res.status(201);
+            res.json({
+                extent,
+                centroid,
+            })
+        } else {
+            res.status(203);
+            console.log("Error inesperado")
+        }  
+
+    } catch (error) {
+        res.status(500);
+        console.log("get job extent error ->", error)
+    }
+};
+
 const getJobs = async (req, res) => {
     try{
         const response = await database.query("SELECT * FROM got.v_jobs ORDER BY id_job");
@@ -171,6 +196,7 @@ const updateJobs = async (req, res) => {
 
 //======================================================================================================//
 module.exports = {
+    getJobExtent,
     getJobs,
     getJobParameters,
     postJobs,
