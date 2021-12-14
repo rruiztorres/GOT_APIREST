@@ -16,6 +16,7 @@ const   {
 
 //METODOS DE JOBS
 const   {
+        deleteJobs,
         getJobExtent,
         getJobParameters,
         postJobs,
@@ -62,13 +63,14 @@ const   {
         router.post('/postJobsErrores', postJobsErrores);               //MIGRADO
         router.post('/cambioEstadosJob', postCambioEstadosJob);         //MIGRADO
         router.post('/cambioEstadosError', postCambioEstadosErrores);   //MIGRADO
-        router.post('/postError', postError)                        //MIGRADO
+        router.post('/postError', postError)                            //MIGRADO
 
         //PUT
         router.put('/updateJob', updateJobs)                            //MIGRADO
         router.put('/updateError', updateError)                         //MIGRADO
         
         //DELTE
+        router.delete('/deleteJobs', deleteJobs)                        //MIGRADO
         router.delete('/deleteError', deleteError)                      //MIGRADO
 
         

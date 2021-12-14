@@ -20,6 +20,39 @@ const { response } = require("express");
 
 //=============================================METODOS==================================================//
 
+const deleteJobs = async(req, res) => {
+    try{
+        const jobs = req.body;
+        let ejecucion = 0;
+        for (this.index in jobs){
+            //Se deben borrar los errores asociados también 
+            const deleteErrores = await database.query('DELETE FROM got.errores WHERE id_job = $1', [jobs[this.index].id_job])
+            const deleteJob = await database.query('DELETE FROM got.jobs WHERE id_job = $1', [jobs[this.index].id_job])
+            
+            //Comprueba ejecución
+            if (deleteJob.rowCount == 0){
+                ejecucion = 1;
+            }
+        }
+
+        //Respuestas
+        if (ejecucion == 0){
+            res.status(201);
+            res.json({
+                mensaje: 'Jobs y errores asociados eliminados correctamente'
+            })
+        } else {
+            res.status(203);
+            res.json({
+                mensaje: 'Error inesperado, por favor compruebe los datos'
+            })
+        }
+    } catch (error){
+        console.log(error)
+    }
+};
+
+
 const getJobExtent = async (req,res) => {
     try{
         const job = req.params.job;
@@ -196,6 +229,7 @@ const updateJobs = async (req, res) => {
 
 //======================================================================================================//
 module.exports = {
+    deleteJobs,
     getJobExtent,
     getJobs,
     getJobParameters,
