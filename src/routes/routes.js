@@ -12,6 +12,7 @@ const   {
 const   {
         postExpediente,
         getExpedientes,
+        getExpedienteById,
         } = require('../controllers/expedienteController');
 
 //METODOS DE JOBS
@@ -55,6 +56,7 @@ const   {
         router.get('/expedientes/', getExpedientes);                    //MIGRADO
         router.get('/erroresEstado/:estado', getErrorByEstado)          //MIGRADO
         router.get('/error/:idJob', getErrorByIdJob);                   //MIGRADO 
+        router.get('/expediente/:expediente', getExpedienteById)        //MIGRADO
 
         //POST
         router.post('/postJobs', postJobs);                             //MIGRADO

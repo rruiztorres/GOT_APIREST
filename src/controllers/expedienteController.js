@@ -38,8 +38,18 @@ const getExpedientes = async (req,res) =>{
     })
 }
 
+const getExpedienteById = async (req,res) =>{
+    const expediente = req.params.expediente
+    const response = await database.query ('SELECT * FROM got.expedientes WHERE expediente = $1', [expediente])
+    res.status(201);
+    res.json({
+        respuesta: response.rows,
+    })
+}
+
 //======================================================================================================//
 module.exports = {
     postExpediente,
     getExpedientes,
+    getExpedienteById,
 };
