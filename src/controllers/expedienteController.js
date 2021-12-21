@@ -19,7 +19,7 @@ const postExpediente = async (req, res) => {
     const expediente = req.body;
     await database.query('INSERT INTO got.expedientes (expediente, fecha, observaciones, finalizado) VALUES ($1, $2, $3, $4)', [
         expediente.numExp,
-        expediente.fecha,
+        expediente.fechaInicio,
         expediente.observaciones,
         expediente.finalizado,
     ])
@@ -47,9 +47,27 @@ const getExpedienteById = async (req,res) =>{
     })
 }
 
+const updateExpediente = async (req,res) => {
+    const expediente = req.body;
+    try{
+        const response = await database.query("UPDATE got.expedientes SET finalizado =$1 WHERE expediente = $2 ",[
+            expediente.finalizado,
+            expediente.expediente,
+        ])
+        if (response.rowCount > 0){
+            res.status(201);
+        } else {
+            res.status(203);
+        }
+    } catch(error){
+        console.log(error)
+    }
+
+}
 //======================================================================================================//
 module.exports = {
     postExpediente,
     getExpedientes,
     getExpedienteById,
+    updateExpediente,
 };

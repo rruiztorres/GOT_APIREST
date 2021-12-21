@@ -119,9 +119,24 @@ const postJobsErrores = async (req, res) => {
                     //Añade el idJob creado al array que devolvemos para asignar id's en la aplicacion.
                     arrayJobsCreados.push(job);
 
-                    //Asociamos jobCandidato para asociar los errores
+                    //Asociamos jobCandidato para la asociacion de errores posterior
                     const id_jobCandidato = await database.query ("SELECT id_job, job FROM got.v_jobs WHERE job = $1 ", [job]);
                     const jobCandidato = id_jobCandidato.rows[0].id_job;
+
+                    //Añade entrada a logger al insertar el job
+                    //TODO: Añadir un parámetro a los jobs para diferenciar si vienen de dentro de la app o desde fuera           
+                    try{
+                        //TODO: Mapear los valores que se insertan
+                        const id_evento = 4;
+                        const descripcion = "Job insertado por el Generador de Jobs Raúl Ruiz Torres";
+                        const logger = await database.query ("INSERT INTO got.logs (id_job, id_evento, descripcion) VALUES ($1, $2, $3)",[
+                            jobCandidato,
+                            id_evento,
+                            descripcion,
+                        ])
+                    } catch(error){
+                        console.log(error)
+                    }
 
                     //Por cada nuevo job reinicia el contador de errores (E1, E2, etc)
                     let erroresEnJob = 1;
