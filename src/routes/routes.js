@@ -13,6 +13,7 @@ const   {
         postExpediente,
         getExpedientes,
         getExpedienteById,
+        updateExpediente,
         } = require('../controllers/expedienteController');
 
 //METODOS DE JOBS
@@ -34,6 +35,12 @@ const   {
         deleteError,
         postError,
         } = require('../controllers/errorControllers');
+
+//METODOS LOGGER
+const {
+        getLog,
+} = require('../controllers/loggerControllers');
+
         
 //CARGA COMBINADA JOBS / ERRORES 
 const   {
@@ -46,34 +53,38 @@ const   {
         postCambioEstadosErrores
         } = require('../controllers/cambioEstados');
 
+
+
 //definicion rutas
         //GET
-        router.get('/jobExtent/:job', getJobExtent)                     //MIGRADO
-        router.get('/jobs', getJobs);                                   //MIGRADO
-        router.get('/conexion', compruebaConexion);                     //MIGRADO
-        router.get('/jobParameters', getJobParameters);                 //MIGRADO
-        router.get('/errorParameters', getErrorParameters);             //MIGRADO
-        router.get('/expedientes/', getExpedientes);                    //MIGRADO
-        router.get('/erroresEstado/:estado', getErrorByEstado)          //MIGRADO
-        router.get('/error/:idJob', getErrorByIdJob);                   //MIGRADO 
-        router.get('/expediente/:expediente', getExpedienteById)        //MIGRADO
+        router.get('/jobExtent/:job', getJobExtent)                     
+        router.get('/jobs', getJobs);                                   
+        router.get('/conexion', compruebaConexion);                     
+        router.get('/jobParameters', getJobParameters);                 
+        router.get('/errorParameters', getErrorParameters);             
+        router.get('/expedientes/', getExpedientes);                   
+        router.get('/erroresEstado/:estado', getErrorByEstado)         
+        router.get('/error/:idJob', getErrorByIdJob);                   
+        router.get('/expediente/:expediente', getExpedienteById)       
+        router.get('/getLog', getLog)
 
         //POST
-        router.post('/postJobs', postJobs);                             //MIGRADO
-        router.post('/expediente', postExpediente);                     //MIGRADO
-        router.post('/auth/:usuario/:password', postAuth);              //MIGRADO
-        router.post('/postJobsErrores', postJobsErrores);               //MIGRADO
-        router.post('/cambioEstadosJob', postCambioEstadosJob);         //MIGRADO
-        router.post('/cambioEstadosError', postCambioEstadosErrores);   //MIGRADO
-        router.post('/postError', postError)                            //MIGRADO
+        router.post('/postJobs', postJobs);                           
+        router.post('/expediente', postExpediente);                  
+        router.post('/auth/:usuario/:password', postAuth);            
+        router.post('/postJobsErrores', postJobsErrores);              
+        router.post('/cambioEstadosJob', postCambioEstadosJob);        
+        router.post('/cambioEstadosError', postCambioEstadosErrores);   
+        router.post('/postError', postError)                           
 
         //PUT
-        router.put('/updateJob', updateJobs)                            //MIGRADO
-        router.put('/updateError', updateError)                         //MIGRADO
+        router.put('/updateJob', updateJobs)                            
+        router.put('/updateError', updateError)                        
+        router.put('/updateExpediente', updateExpediente)              
         
         //DELTE
-        router.delete('/deleteJobs', deleteJobs)                        //MIGRADO
-        router.delete('/deleteError', deleteError)                      //MIGRADO
+        router.delete('/deleteJobs', deleteJobs)                       
+        router.delete('/deleteError', deleteError)                      
 
         
 module.exports = router;
