@@ -121,6 +121,8 @@ const updateError = async (req, res) => {
 const deleteError = async (req, res) => {
     try {
         const error = req.body.error;
+        //Borrar antes en tabla de tiempos_error
+        const borrarTiemposError = await database.query('DELETE FROM got.t_errores WHERE id_error = $1', [error.id_error])
         const borrarError = await database.query ('DELETE FROM got.errores WHERE error = $1', [error.error]);
 
         if (borrarError.rowCount > 0) {

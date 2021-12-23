@@ -1,6 +1,8 @@
 const { Pool } = require("pg");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
+const { response } = require("express");
+
 
 const check = { check: true };
 const token = jwt.sign(check, process.env.JWTKEY, { expiresIn: 1440 });
@@ -16,10 +18,14 @@ const database = new Pool({
 
 //Transformer
 const transformer = require ("../dist/transformer");
-const { response } = require("express");
+//Logger
+const newEntryLog = require("../dist/newEntryLog");
+
 
 //Point in polygon
 const pointInPolygon = require("point-in-polygon");
+
+
 
 //=============================================METODOS==================================================//
 const postJobsErrores = async (req, res) => {
@@ -28,6 +34,8 @@ const postJobsErrores = async (req, res) => {
         let arrayErroresEvaluados = [];
         const jobsRecibidos = req.body.jobs;
         const errores = req.body.errores;
+        const dataLogger = req.body.log;
+        const idEventoLogger = 4 //Inserción Job manual desde GOT
         const year = new Date().getFullYear();
 
         if (jobsRecibidos.length == 0){
@@ -112,7 +120,7 @@ const postJobsErrores = async (req, res) => {
                         geometria_json,
                         job_grande,
                         ]);
-
+                    
                     //Graba el idJob en la BD. En la siguiente iteración se le sumará 1.
                     let avanceSerial = await database.query ("UPDATE got.serial SET serial_id = $1", [newId.rows[0].to_char])
                     
@@ -122,21 +130,10 @@ const postJobsErrores = async (req, res) => {
                     //Asociamos jobCandidato para la asociacion de errores posterior
                     const id_jobCandidato = await database.query ("SELECT id_job, job FROM got.v_jobs WHERE job = $1 ", [job]);
                     const jobCandidato = id_jobCandidato.rows[0].id_job;
-
+                    
                     //Añade entrada a logger al insertar el job
-                    //TODO: Añadir un parámetro a los jobs para diferenciar si vienen de dentro de la app o desde fuera           
-                    try{
-                        //TODO: Mapear los valores que se insertan
-                        const id_evento = 4;
-                        const descripcion = "Job insertado por el Generador de Jobs Raúl Ruiz Torres";
-                        const logger = await database.query ("INSERT INTO got.logs (id_job, id_evento, descripcion) VALUES ($1, $2, $3)",[
-                            jobCandidato,
-                            id_evento,
-                            descripcion,
-                        ])
-                    } catch(error){
-                        console.log(error)
-                    }
+                    const logger = newEntryLog(jobCandidato, dataLogger.procesoJob, idEventoLogger, dataLogger.usuario, dataLogger.observaciones, dataLogger.departamento,dataLogger.resultadoCC)
+
 
                     //Por cada nuevo job reinicia el contador de errores (E1, E2, etc)
                     let erroresEnJob = 1;

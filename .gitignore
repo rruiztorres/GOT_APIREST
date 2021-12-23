@@ -1238,3 +1238,4 @@ node_modules/xtend/test.js
 conexionbd.js
 leeme.txt
 .env
+.env.production

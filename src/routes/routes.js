@@ -38,7 +38,7 @@ const   {
 
 //METODOS LOGGER
 const {
-        getLog,
+        getLogByJob,
 } = require('../controllers/loggerControllers');
 
         
@@ -66,7 +66,7 @@ const   {
         router.get('/erroresEstado/:estado', getErrorByEstado)         
         router.get('/error/:idJob', getErrorByIdJob);                   
         router.get('/expediente/:expediente', getExpedienteById)       
-        router.get('/getLog', getLog)
+        router.get('/getLogByJob/:job', getLogByJob)
 
         //POST
         router.post('/postJobs', postJobs);                           

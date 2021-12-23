@@ -13,19 +13,29 @@ const database = new Pool({
     port: process.env.DB_PORT,
 });
 
-
-//Transformer
-const transformer = require ("../dist/transformer");
-const { response } = require("express");
-
 //=============================================METODOS==================================================//
 
-const getLog = async(req,res) => {
-    //
+const getLogByJob = async(req,res) => {
+    const job = req.params.job;
+    try {
+        const response = await database.query('SELECT codigo, job, evento, descripcion, fecha FROM got.v_logs WHERE job = $1 ORDER BY fecha DESC', [
+            job
+        ])
+        if (response.rowCount > 0){
+            res.status(201);
+            res.json({
+                log: response.rows,
+            })
+        } else {
+            res.status(203);
+        }
+    } catch (error) {
+        console.log(error)
+    }
 }
 
 
 //======================================================================================================//
 module.exports = {
-    getLog,
+    getLogByJob,
 };
