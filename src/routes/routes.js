@@ -50,7 +50,7 @@ const   {
 //CAMBIO ESTADOS JOBS / ERRORES
 const   {
         postCambioEstadosJob,
-        postCambioEstadosErrores
+        putCambioEstadosErrores
         } = require('../controllers/cambioEstados');
 
 
@@ -74,13 +74,14 @@ const   {
         router.post('/auth/:usuario/:password', postAuth);            
         router.post('/postJobsErrores', postJobsErrores);              
         router.post('/cambioEstadosJob', postCambioEstadosJob);        
-        router.post('/cambioEstadosError', postCambioEstadosErrores);   
         router.post('/postError', postError)                           
 
         //PUT
         router.put('/updateJob', updateJobs)                            
         router.put('/updateError', updateError)                        
-        router.put('/updateExpediente', updateExpediente)              
+        router.put('/updateExpediente', updateExpediente)
+        router.put('/cambioEstadosError', putCambioEstadosErrores);   
+              
         
         //DELTE
         router.delete('/deleteJobs', deleteJobs)                       

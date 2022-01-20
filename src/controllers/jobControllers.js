@@ -23,49 +23,46 @@ const newEntryLog = require("../dist/newEntryLog");
 //=============================================METODOS==================================================//
 
 const deleteJobs = async(req, res) => {
-        const jobs = req.body;
-        let ejecucion = 0;
-        for (this.index in jobs){
-            //SE DEBEN BORRAR TAMBIEN LOS ERRORES, EL LOG Y LAS TABLAS DE TIEMPO ASOCIADAS
-            
-            //Obtenemos los id_error antes de borrarlos para luego borrar los registros en la tabla t_error
-            try{
-                const erroresBorrar = await database.query('SELECT id_error FROM got.errores WHERE id_job = $1', [jobs[this.index].id_job])
-                
-                //Borramos la tabla de tiempos errores
-                const borrar = erroresBorrar.rows;
-                for (this.indexError in borrar){
-                    const borrarError = borrar[this.indexError].id_error;
-                    try{const deleteTiemposErrores = await database.query('DELETE FROM got.t_errores WHERE id_error = $1',[borrarError,])}
-                    catch(error){console.log("deleteJobs > borrando tiempos errores ->", error)}
-                }
-            } 
-            catch(error){console.log("deleteJobs > obteniendo errores a borrar -> ", error)}
-          
-
-            //Borramos los errores 
-            try{const deleteErrores = await database.query('DELETE FROM got.errores WHERE id_job = $1', [jobs[this.index].id_job])}
-            catch(error){console.log("deleteJobs > borrando errores ->", error)}
-
-            //Borramos la tabla de tiempos jobs
-            try{const deleteTiemposJob = await database.query('DELETE FROM got.t_jobs WHERE id_job = $1', [jobs[this.index].id_job])}
-            catch(error){console.log("deleteJobs > borrando tiempos errores ->", error)}
-
-            //Borramos las entradas del log
-            try{const deleteLog = await database.query('DELETE FROM got.logs WHERE id_job = $1', [jobs[this.index].id_job])}
-            catch(error){console.log("deleteJobs > borrando tiempos jobs ->", error)}
-            
-            //Borramos el job
-            try{
-                const deleteJob = await database.query('DELETE FROM got.jobs WHERE id_job = $1', [jobs[this.index].id_job])
-                //Comprueba borrado correcto
-                if (deleteJob.rowCount == 0){
-                    ejecucion = 1;
-                }
+    const jobs = req.body;
+    let ejecucion = 0;
+    for (this.index in jobs){
+        //SE DEBEN BORRAR TAMBIEN LOS ERRORES, EL LOG Y LAS TABLAS DE TIEMPO ASOCIADAS
+        //Obtenemos los id_error antes de borrarlos para luego borrar los registros en la tabla t_error
+        try{
+            const erroresBorrar = await database.query('SELECT id_error FROM got.errores WHERE id_job = $1', [jobs[this.index].id_job]) 
+            //Borramos la tabla de tiempos errores
+            const borrar = erroresBorrar.rows;
+            for (this.indexError in borrar){
+                const borrarError = borrar[this.indexError].id_error;
+                try{const deleteTiemposErrores = await database.query('DELETE FROM got.t_errores WHERE id_error = $1',[borrarError,])}
+                catch(error){console.log("deleteJobs > borrando tiempos errores ->", error)}
             }
-            catch(error){console.log("deleteJobs > borrando job ->", error)}  
-            
+        } 
+        catch(error){console.log("deleteJobs > obteniendo errores a borrar -> ", error)}
+    
 
+        //Borramos los errores 
+        try{const deleteErrores = await database.query('DELETE FROM got.errores WHERE id_job = $1', [jobs[this.index].id_job])}
+        catch(error){console.log("deleteJobs > borrando errores ->", error)}
+
+        //Borramos la tabla de tiempos jobs
+        try{const deleteTiemposJob = await database.query('DELETE FROM got.t_jobs WHERE id_job = $1', [jobs[this.index].id_job])}
+        catch(error){console.log("deleteJobs > borrando tiempos errores ->", error)}
+
+        //Borramos las entradas del log
+        try{const deleteLog = await database.query('DELETE FROM got.logs WHERE id_job = $1', [jobs[this.index].id_job])}
+        catch(error){console.log("deleteJobs > borrando tiempos jobs ->", error)}
+        
+        //Borramos el job
+        try{
+            const deleteJob = await database.query('DELETE FROM got.jobs WHERE id_job = $1', [jobs[this.index].id_job])
+            //Comprueba borrado correcto
+            if (deleteJob.rowCount == 0){
+                ejecucion = 1;
+            }
+        }
+        catch(error){console.log("deleteJobs > borrando job ->", error)}
+    
         //Respuestas
         if (ejecucion == 0){
             res.status(201);
@@ -208,7 +205,7 @@ const postJobs = async (req, res) => {
 
 const updateJobs = async (req, res) => {
     try{   
-        const actualizarJob = req.body[0][0]
+        const actualizarJob = req.body[0]
         const descripcion = actualizarJob.descripcion;
         const idGravedad = transformer("gravedad", actualizarJob.gravedad_job);
         const idDeteccion = transformer("deteccion", actualizarJob.deteccion_job);
@@ -222,9 +219,7 @@ const updateJobs = async (req, res) => {
         const jobGrande = actualizarJob.job_grande;
         const idJob = await database.query ("SELECT id_job FROM got.jobs WHERE job = $1",[actualizarJob.job])
         
-        const dataLogger = req.body[1];
-        const idEventoLogger = req.body[1].idEventoLogger;
-
+    
         //Insercion en BD
         const response = await database.query('UPDATE got.jobs SET descripcion = $1, id_gravedad = $2, id_deteccion = $3, id_arreglo = $4, geometria = ST_GeomFromText($5 \,\'3857\'), id_tipo_bandeja = $6, id_asignacion_job = $7, id_operador = $8, id_expediente = $9, geometria_json = $10, job_grande = $11 WHERE id_job = $12;',[
             descripcion,
@@ -242,9 +237,15 @@ const updateJobs = async (req, res) => {
         ])
 
         if (response.rowCount > 0){
-            //Añade entrada a logger al insertar el job
-            //id_job, procesoJob, id_evento, usuario, observaciones, departamento, resultadoCC
-            const logger = newEntryLog(idJob.rows[0].id_job, dataLogger.procesoJob, idEventoLogger, dataLogger.usuario, dataLogger.observaciones, dataLogger.departamento,dataLogger.resultadoCC)
+            //Solo si se requiere una insercion en el logger
+            if (req.body[1] != undefined){
+                const dataLogger = req.body[1];
+                const idEventoLogger = req.body[1].idEventoLogger;
+
+                //Añade entrada a logger al insertar el job
+                //id_job, procesoJob, id_evento, usuario, observaciones, departamento, resultadoCC
+                const logger = newEntryLog(idJob.rows[0].id_job, dataLogger.procesoJob, idEventoLogger, dataLogger.usuario, dataLogger.observaciones, dataLogger.departamento,dataLogger.resultadoCC)         
+            }
             
             res.status(201);
             res.json({

@@ -21,223 +21,211 @@ const transformer = require ("../dist/transformer");
 //Logger
 const newEntryLog = require("../dist/newEntryLog");
 
-
 //Point in polygon
 const pointInPolygon = require("point-in-polygon");
 
 
 
 //=============================================METODOS==================================================//
+
 const postJobsErrores = async (req, res) => {
     try{
-        let arrayJobsCreados = [];
-        let arrayErroresEvaluados = [];
-        const jobsRecibidos = req.body.jobs;
+        //MAPEAR DATOS JOBS, ERRORES, LOG
+        const jobs = req.body.jobs;
         const errores = req.body.errores;
-        const dataLogger = req.body.log;
-        const idEventoLogger = 4 //Inserción Job manual desde GOT
+        const log = req.body.log;
+
+        //INICIALIZAR CONSTANTES GLOBALES
         const year = new Date().getFullYear();
+        let arrayJobsCreados = [];
+        let arrayErroresCreados = [];
+        const idEventoLogger = 4 //Inserción Job manual desde GOT
 
-        if (jobsRecibidos.length == 0){
-            //ERRORES SIN ASIGNAR A JOB
-            try{
-                if (errores != null) {
-                    //PARAMETROS ERRORES SIN ASIGNAR A JOB
-                    for (this.errorIndex in errores) {
-                        const estado = transformer('estadosErrores', errores[this.errorIndex].estado);
-                        const tipo_error = transformer('tiposError', errores[this.errorIndex].tipo_error);
-                        const tema_error = transformer('temasError', errores[this.errorIndex].tema_error);
-                        const descripcionErr = errores[this.errorIndex].descripcion;
-                        const geometria = errores[this.errorIndex].geometria;
-                        const geometriaJSON = errores[this.errorIndex].geometria_json;
-                        const idViaEnt = transformer('viaEntrada', errores[this.errorIndex].via_ent);
+        //EXISTEN JOBS?
+        if (jobs.length > 0){
+            for (this.longJobs in jobs){
 
-                        //INSERTAMOS ERROR EN BD
-                        this.responseError = await database.query("INSERT INTO got.errores (id_tema_error, id_tipo_error, descripcion, id_estado_error, geometria_json, geometria, id_via_ent) VALUES ($1, $2, $3, $4, $5, ST_GeomFromText($6 \,\'3857\'), $7)",[
-                            tema_error,
-                            tipo_error,
-                            descripcionErr,
-                            estado,
-                            geometriaJSON,
-                            geometria,
-                            idViaEnt
-                        ]);                            
-                    };
-                    //RESPUESTAS SOLO ERRORES
-                    if (this.responseError.rowCount > 0) {
-                        res.status(201);
-                        res.json({
-                            tipo: "Errores sin asignar",
-                            mensaje: "Errores creados correctamente",
-                        })
-                    } else {
-                        res.status(203);
-                        res.json({
-                            tipo: "Errores sin asignar",
-                            respuesta: 'No se han guardado los errores',
-                        })
+                //OBTENER CODIGO JOB
+                let newIdJob = await database.query ("SELECT to_char(serial_id + 1, 'fm000000') FROM got.serial;")
+                jobs[this.longJobs].job = year + '_' + newIdJob.rows[0].to_char;
+
+                //MAPEAR DATOS DE JOB
+                let codigoJob = jobs[this.longJobs].job;
+                const expediente = transformer('expediente', jobs[this.longJobs].expediente);
+                const descripcion = jobs[this.longJobs].descripcion;
+                const gravedad_job = transformer('gravedad', jobs[this.longJobs].gravedad_job);
+                const deteccion_job = transformer('deteccion', jobs[this.longJobs].deteccion_job);
+                const arreglo_job = transformer('perfil', jobs[this.longJobs].arreglo_job);
+                const estado = transformer('estadosJobs', jobs[this.longJobs].estado);
+                const tipo_bandeja = transformer('tipoBandeja', jobs[this.longJobs].tipo_bandeja);
+                const asignacion_job = transformer('asignacion', jobs[this.longJobs].asignacion_job);
+                const nombre_operador = transformer('operador', jobs[this.longJobs].nombre_operador);
+                const geometria = jobs[this.longJobs].geometria;
+                const geometria_json = jobs[this.longJobs].geometria_json; 
+                const job_grande = jobs[this.longJobs].job_grande;
+
+                //INSERCION JOB EN BD
+                await database.query("INSERT INTO got.jobs (id_expediente, job, descripcion, id_gravedad, id_deteccion, id_arreglo, id_estado_job, id_tipo_bandeja, id_asignacion_job, id_operador, geometria, geometria_json, job_grande) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, ST_GeomFromText($11 \,\'3857\'), $12, $13 )",[
+                    expediente,
+                    codigoJob,
+                    descripcion,
+                    gravedad_job,
+                    deteccion_job,
+                    arreglo_job,
+                    estado,
+                    tipo_bandeja,
+                    asignacion_job,
+                    nombre_operador,
+                    geometria,
+                    geometria_json,
+                    job_grande,
+                ]);
+
+                //OBTENER ID JOB INSERTADO Y ALMACENAMOS EN EL OBJETO
+                const idJob = await database.query ("SELECT id_job FROM got.jobs id_job WHERE job = $1",[codigoJob])
+                jobs[this.longJobs].id_job = idJob.rows[0].id_job;
+                
+                //AVANZAR CODIGO JOB
+                await database.query ("UPDATE got.serial SET serial_id = $1", [newIdJob.rows[0].to_char]);
+                
+                //AÑADIR CODIGO JOB A ARRAY JOBS CREADOS
+                arrayJobsCreados.push(codigoJob);
+                
+                //INSERTAR EVENTO EN LOGGER
+                newEntryLog(
+                    jobs[this.longJobs].id_job, 
+                    log.procesoJob, 
+                    idEventoLogger, 
+                    log.usuario, 
+                    log.observaciones, 
+                    log.departamento,
+                    log.resultadoCC
+                )         
+            } //fin bucle jobs
+        } // fin existen jobs?
+
+        //EXISTEN ERRORES?
+        if (errores.length > 0){
+
+            //OBTENER LONGITUD DE ERRORES  
+            for (this.longErrores in errores) {
+
+                //MAPEAR DATOS DE ERROR
+                const descripcion = errores[this.longErrores].descripcion;
+                const tema_error = transformer('temasError', errores[this.longErrores].tema_error);
+                const tipo_error = transformer('tiposError', errores[this.longErrores].tipo_error);
+                const via_ent = transformer('viaEntrada', errores[this.longErrores].via_ent);
+                const estado = transformer('estadosErrores', errores[this.longErrores].estado);
+                const geometria = errores[this.longErrores].geometria;
+                const geometriaJSON = errores[this.longErrores].geometria_json;
+
+                //SE HAN CREADO JOBS?
+                if (arrayJobsCreados.length > 0){
+
+                    //COMPARAR ERROR CON LOS JOBS CREADOS
+                    this.point = [
+                        errores[this.longErrores].geometria_json.coordinates[0],
+                        errores[this.longErrores].geometria_json.coordinates[1],
+                    ];
+
+                    for (this.longJobs in jobs){
+                        this.polygon = [jobs[this.longJobs].geometria_json.coordinates[0]];
+                        this.inside = pointInPolygon(this.point, this.polygon[0]);
+
+                        //EL ERROR ESTÁ DENTRO DE ALGUNO DE LOS JOBS CREADOS?
+                        if (this.inside == true){
+
+                            //ASOCIAR ERROR A JOB A TRAVES DE id_job
+                            errores[this.longErrores].job = jobs[this.longJobs].id_job
+                        }
                     }
+                } else {
+                    // ESTABLECER id_job EN ERROR A null
+                    errores[this.longErrores].job = null;
                 }
+            } // fin bucle errores
 
-            } catch (error){
-                console.log("errores sin asignar", error)
+            //CREAR CODIGOS DE ERROR SI SE HAN CREADO JOBS
+            if (arrayJobsCreados.length > 0){
+                
+                //OBTENER LONGITUD DE ERRORES
+                for (this.longJobs in jobs) {
+                    let numeroError = 1;
+
+                    //OBTENER LONGITUD DE JOBS
+                    for (this.longErrores in errores) {
+                        if (jobs[this.longJobs].id_job === errores[this.longErrores].job){
+
+                            //CREAR CODIGO ERROR A PARTIR DE CODIGO JOB
+                            const codigoError = jobs[this.longJobs].job + '_E' + numeroError;
+                            errores[this.longErrores].error = codigoError;
+                            //AVANZAR NUMERO ERROR
+                            numeroError++;
+
+                            //AÑADIR ERROR A ARRAY ERRORES CREADOS
+                            let errorCreado = {
+                                idInterno: errores[this.longErrores].id,
+                                asignado: true,
+                                codigoError: errores[this.longErrores].error,
+                                id_error: errores[this.longErrores].id_error,
+                                job: jobs[this.longJobs].job
+                            };
+                            arrayErroresCreados.push(errorCreado);
+                        }
+                    }            
+                }
             }
-        } else {
-        //JOBS O JOBS CON ERRORES ASIGNADOS
-            try{
-                for (this.index in jobsRecibidos){
-                    //SERIAL (los años se asignan automáticamente de acuerdo a la fecha del sistema)
-                    let newId = await database.query ("SELECT to_char(serial_id + 1, 'fm000000') FROM got.serial;")
 
-                    //PARAMETROS JOB
-                    let job = year + '_' + newId.rows[0].to_char;
-                    const expediente = transformer('expediente', jobsRecibidos[this.index].expediente);
-                    const descripcion = jobsRecibidos[this.index].descripcion;
-                    const gravedad_job = transformer('gravedad', jobsRecibidos[this.index].gravedad_job);
-                    const deteccion_job = transformer('deteccion', jobsRecibidos[this.index].deteccion_job);
-                    const arreglo_job = transformer('perfil', jobsRecibidos[this.index].arreglo_job);
-                    const estado = transformer('estadosJobs', jobsRecibidos[this.index].estado);
-                    const tipo_bandeja = transformer('tipoBandeja', jobsRecibidos[this.index].tipo_bandeja);
-                    const asignacion_job = transformer('asignacion', jobsRecibidos[this.index].asignacion_job);
-                    const nombre_operador = transformer('operador', jobsRecibidos[this.index].nombre_operador);
-                    const geometria = jobsRecibidos[this.index].geometria;
-                    const geometria_json = jobsRecibidos[this.index].geometria_json; 
-                    const job_grande = jobsRecibidos[this.index].job_grande;
+            //EVALUAR SI LOS ERRORES SON ERRORES SIN ASIGNAR        
+            for (this.longErrores in errores){
 
-                    //INSERCION JOB
-                    const response = await database.query("INSERT INTO got.jobs (id_expediente, job, descripcion, id_gravedad, id_deteccion, id_arreglo, id_estado_job, id_tipo_bandeja, id_asignacion_job, id_operador, geometria, geometria_json, job_grande) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, ST_GeomFromText($11 \,\'3857\'), $12, $13 )",[
-                        expediente,
-                        job,
-                        descripcion,
-                        gravedad_job,
-                        deteccion_job,
-                        arreglo_job,
-                        estado,
-                        tipo_bandeja,
-                        asignacion_job,
-                        nombre_operador,
-                        geometria,
-                        geometria_json,
-                        job_grande,
-                        ]);
-                    
-                    //Graba el idJob en la BD. En la siguiente iteración se le sumará 1.
-                    let avanceSerial = await database.query ("UPDATE got.serial SET serial_id = $1", [newId.rows[0].to_char])
-                    
-                    //Añade el idJob creado al array que devolvemos para asignar id's en la aplicacion.
-                    arrayJobsCreados.push(job);
+                if (errores[this.longErrores].id_error != null){
 
-                    //Asociamos jobCandidato para la asociacion de errores posterior
-                    const id_jobCandidato = await database.query ("SELECT id_job, job FROM got.v_jobs WHERE job = $1 ", [job]);
-                    const jobCandidato = id_jobCandidato.rows[0].id_job;
-                    
-                    //Añade entrada a logger al insertar el job
-                    const logger = newEntryLog(jobCandidato, dataLogger.procesoJob, idEventoLogger, dataLogger.usuario, dataLogger.observaciones, dataLogger.departamento,dataLogger.resultadoCC)
+                    //ERROR EXISTÍA PREVIAMENTE - UPDATE EN BD
+                    await database.query("UPDATE got.errores SET id_job = $1, error = $2, id_tema_error = $3, id_tipo_error = $4, descripcion = $5, id_estado_error = $6, geometria = ST_GeomFromText($7 \,\'3857\'), id_via_ent = $8, geometria_json = $9  WHERE id_error = $10",[
+                        errores[this.longErrores].job,
+                        errores[this.longErrores].error,
+                        transformer('temasError', errores[this.longErrores].tema_error),
+                        transformer('tiposError', errores[this.longErrores].tipo_error),
+                        errores[this.longErrores].descripcion,
+                        transformer('estadosErrores', errores[this.longErrores].estado),
+                        errores[this.longErrores].geometria,
+                        transformer('viaEntrada', errores[this.longErrores].via_ent),
+                        errores[this.longErrores].geometria_json,
+                        errores[this.longErrores].id_error,
+                    ])
+                } else {
 
-
-                    //Por cada nuevo job reinicia el contador de errores (E1, E2, etc)
-                    let erroresEnJob = 1;
-                    
-                    if (errores != null) {
-                        //PARAMETROS ERRORES (es necesario grabar antes los jobs ya que la asignacion se hace por id_job)
-                        for (this.errorIndex in errores) {
-                            const estado = transformer('estadosErrores', errores[this.errorIndex].estado);
-                            const tipo_error = transformer('tiposError', errores[this.errorIndex].tipo_error);
-                            const tema_error = transformer('temasError', errores[this.errorIndex].tema_error);
-                            const descripcionErr = errores[this.errorIndex].descripcion;
-                            const geometria = errores[this.errorIndex].geometria;
-                            const geometriaJSON = errores[this.errorIndex].geometria_json;
-                            const idViaEnt = transformer('viaEntrada', errores[this.errorIndex].via_ent);
-
-                            // Comprobamos si el error está dentro del polígono de job
-                            this.point = [
-                                errores[this.errorIndex].geometria_json.coordinates[0],
-                                errores[this.errorIndex].geometria_json.coordinates[1],
-                            ];
-                            this.polygon = [jobsRecibidos[this.index].geometria_json.coordinates[0]];
-                            this.inside = pointInPolygon(this.point, this.polygon[0]);
-
-                            if (this.inside == true) {
-                                //Asociamos idJob al error si está dentro geometricamente y añadimos al array para devolver.
-                                const idError = job + '_E' + erroresEnJob;
-                                //Avanzamos contador de error solo si se detecta dentro de un job.
-                                erroresEnJob ++;
-                                //Creamos objeto para devolver errores y jobs creados con sus asociaciones correspondientes.
-                                let errorCreado = {
-                                    idInterno: errores[this.errorIndex].id,
-                                    asignado: true,
-                                    idError,
-                                    job: job,
-                                };
-                                arrayErroresEvaluados.push(errorCreado);
-                                
-                                //INSERTAMOS ERROR EN BD
-                                const responseError = await database.query("INSERT INTO got.errores (id_job, error, id_tema_error, id_tipo_error, descripcion, id_estado_error, geometria_json, geometria, id_via_ent) VALUES ($1, $2, $3, $4, $5, $6, $7, ST_GeomFromText($8 \,\'3857\'), $9)",[
-                                    jobCandidato,
-                                    idError,
-                                    tema_error,
-                                    tipo_error,
-                                    descripcionErr,
-                                    estado,
-                                    geometriaJSON,
-                                    geometria,
-                                    idViaEnt
-                                ]);
-                                
-                            } else {
-                                //El error está fuera del job
-                                let errorCreado = {
-                                    idInterno: errores[this.errorIndex].id,
-                                    asignado: false,
-                                    idError: null,
-                                    job: null
-                                };
-
-                                arrayErroresEvaluados.push(errorCreado);
-
-                                //INSERTAMOS ERROR EN BD
-                                const responseError = await database.query("INSERT INTO got.errores (id_job, error, id_tema_error, id_tipo_error, descripcion, id_estado_error, geometria_json, geometria, id_via_ent) VALUES ($1, $2, $3, $4, $5, $6, $7, ST_GeomFromText($8 \,\'3857\'), $9)",[
-                                    null,
-                                    null,
-                                    tema_error,
-                                    tipo_error,
-                                    descripcionErr,
-                                    estado,
-                                    geometriaJSON,
-                                    geometria,
-                                    idViaEnt
-                                ]);
-                            }
-                        };
-                        //Reiniciamos contador errores detectados en job
-                        erroresEnJob = 1;
-                    }
-                } 
-
-                //RESPUESTAS JOBS + ERRORES
-                if (arrayJobsCreados.length != 0 || arrayErroresDentroJob != 0) {
-                    res.status(201);
-                    res.json({
-                        jobs: arrayJobsCreados,
-                        errores: arrayErroresEvaluados,
-                    })
+                    //ERROR NO EXISTÍA PREVIAMENTE - INSERT EN BD
+                    await database.query("INSERT INTO got.errores (id_job, error, id_tema_error, id_tipo_error, descripcion, id_estado_error, geometria, id_via_ent, geometria_json) VALUES ($1, $2, $3, $4, $5, $6, ST_GeomFromText($7 \,\'3857\'), $8, $9)",[
+                        errores[this.longErrores].job,
+                        errores[this.longErrores].error,
+                        transformer('temasError', errores[this.longErrores].tema_error),
+                        transformer('tiposError', errores[this.longErrores].tipo_error),
+                        errores[this.longErrores].descripcion,
+                        transformer('estadosErrores', errores[this.longErrores].estado),
+                        errores[this.longErrores].geometria,
+                        transformer('viaEntrada', errores[this.longErrores].via_ent),
+                        errores[this.longErrores].geometria_json,
+                    ])
                 }
-                else {
-                    res.status(203);
-                    res.json({
-                        respuesta: 'No se han encontrado datos que guardar'
-                    })
-                }
-            } catch (error){
-                console.error(error)
+            } //fin bucle errores
+
+            //ENVIAR RESPUESTAS
+            if (arrayJobsCreados.length != 0 || errores.length != 0) {
+                res.status(201);
+                res.json({
+                    jobs: arrayJobsCreados,
+                    errores: arrayErroresCreados,
+                })
+            }
+            else {
+                res.status(203);
+                res.json({
+                    respuesta: 'No se han encontrado datos que guardar'
+                })
             }
         }
-    } catch(error){
-        console.error(error)
-    }
+    }catch(error){console.log("postJobsErrores -> ", error)}
 }
-
-
-module.exports = {
-    postJobsErrores
-};
+module.exports = {postJobsErrores};

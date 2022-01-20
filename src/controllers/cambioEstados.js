@@ -34,7 +34,7 @@ const postCambioEstadosJob = async (req, res) => {
 
         const idEventoLogger = req.body[1].idEventoLogger;
         const dataLogger = req.body[1];
-
+        
         const response = await database.query('UPDATE got.jobs SET id_estado_job = $1, id_operador = $2 WHERE job = $3;',[
                 nuevoEstado,
                 operador,
@@ -66,14 +66,13 @@ const postCambioEstadosJob = async (req, res) => {
 
 
 
-const postCambioEstadosErrores = async (req, res) => {
+const putCambioEstadosErrores = async (req, res) => {
     try{
+        const id_error = (req.body.id_error);
         const nuevoEstado = transformer('estadosErrores', req.body.nuevoEstado);
-        const error = (req.body.error);
-        
-        const response = await database.query('UPDATE got.errores SET id_estado_error = $1 WHERE error = $2;',[
+        const response = await database.query('UPDATE got.errores SET id_estado_error = $1 WHERE id_error = $2;',[
                 nuevoEstado,
-                error
+                id_error
             ])
         
             if (response.rowCount != 0) {
@@ -100,5 +99,5 @@ const postCambioEstadosErrores = async (req, res) => {
 
 module.exports = {
     postCambioEstadosJob,
-    postCambioEstadosErrores
+    putCambioEstadosErrores
 };
