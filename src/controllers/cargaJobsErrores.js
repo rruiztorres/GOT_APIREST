@@ -210,22 +210,23 @@ const postJobsErrores = async (req, res) => {
                     ])
                 }
             } //fin bucle errores
+        } 
 
-            //ENVIAR RESPUESTAS
-            if (arrayJobsCreados.length != 0 || errores.length != 0) {
-                res.status(201);
-                res.json({
-                    jobs: arrayJobsCreados,
-                    errores: arrayErroresCreados,
-                })
-            }
-            else {
-                res.status(203);
-                res.json({
-                    respuesta: 'No se han encontrado datos que guardar'
-                })
-            }
+        //ENVIAR RESPUESTAS
+        if (arrayJobsCreados.length != 0 || errores.length != 0) {
+            res.status(201);
+            res.json({
+                jobs: arrayJobsCreados,
+                errores: arrayErroresCreados,
+            })
         }
+        else {
+            res.status(203);
+            res.json({
+                respuesta: 'No se han encontrado datos que guardar'
+            })
+        }
+
     }catch(error){console.log("postJobsErrores -> ", error)}
 }
 module.exports = {postJobsErrores};

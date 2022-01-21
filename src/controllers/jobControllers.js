@@ -25,56 +25,49 @@ const newEntryLog = require("../dist/newEntryLog");
 const deleteJobs = async(req, res) => {
     const jobs = req.body;
     let ejecucion = 0;
-    for (this.index in jobs){
-        //SE DEBEN BORRAR TAMBIEN LOS ERRORES, EL LOG Y LAS TABLAS DE TIEMPO ASOCIADAS
-        //Obtenemos los id_error antes de borrarlos para luego borrar los registros en la tabla t_error
-        try{
-            const erroresBorrar = await database.query('SELECT id_error FROM got.errores WHERE id_job = $1', [jobs[this.index].id_job]) 
-            //Borramos la tabla de tiempos errores
-            const borrar = erroresBorrar.rows;
-            for (this.indexError in borrar){
-                const borrarError = borrar[this.indexError].id_error;
-                try{const deleteTiemposErrores = await database.query('DELETE FROM got.t_errores WHERE id_error = $1',[borrarError,])}
-                catch(error){console.log("deleteJobs > borrando tiempos errores ->", error)}
+    try{
+        for (this.index in jobs){   
+            //BORRAR TABLA TIEMPOS ERRORES
+            ///obtener id_error que pertenecen al job actual
+            const borrar = await database.query('SELECT id_error FROM got.errores WHERE id_job = $1', [jobs[this.index].id_job]);
+            const erroresBorrar = borrar.rows;
+
+            ///borrado de tabla de tiempos errores
+            for (this.longErroresBorrar in erroresBorrar){
+                await database.query('DELETE FROM got.t_errores WHERE id_error = $1',[ erroresBorrar[this.longErroresBorrar].id_error ]);
             }
-        } 
-        catch(error){console.log("deleteJobs > obteniendo errores a borrar -> ", error)}
-    
 
-        //Borramos los errores 
-        try{const deleteErrores = await database.query('DELETE FROM got.errores WHERE id_job = $1', [jobs[this.index].id_job])}
-        catch(error){console.log("deleteJobs > borrando errores ->", error)}
+            //BORRAR TABLA TIEMPOS JOBS
+            try{await database.query('DELETE FROM got.t_jobs WHERE id_job = $1', [jobs[this.index].id_job]);}
+            catch(t_jobs){ if(t_jobs != undefined){ ejecucion = 1} console.log("fallo en borrar tiempos jobs")}
 
-        //Borramos la tabla de tiempos jobs
-        try{const deleteTiemposJob = await database.query('DELETE FROM got.t_jobs WHERE id_job = $1', [jobs[this.index].id_job])}
-        catch(error){console.log("deleteJobs > borrando tiempos errores ->", error)}
+            //BORRAR ENTRADAS DE LOG
+            try{await database.query('DELETE FROM got.logs WHERE id_job = $1', [jobs[this.index].id_job])}
+            catch(entry_log){ if(entry_log != undefined){ ejecucion = 1} console.log("fallo en borrar entradas log")}
 
-        //Borramos las entradas del log
-        try{const deleteLog = await database.query('DELETE FROM got.logs WHERE id_job = $1', [jobs[this.index].id_job])}
-        catch(error){console.log("deleteJobs > borrando tiempos jobs ->", error)}
+            //BORRAR ERRORES
+            try{await database.query('DELETE FROM got.errores WHERE id_job = $1', [jobs[this.index].id_job])}
+            catch(delete_errores){ if(delete_errores != undefined){ ejecucion = 1} console.log("fallo en borrar errores")}
         
-        //Borramos el job
-        try{
-            const deleteJob = await database.query('DELETE FROM got.jobs WHERE id_job = $1', [jobs[this.index].id_job])
-            //Comprueba borrado correcto
-            if (deleteJob.rowCount == 0){
-                ejecucion = 1;
-            }
+            //BORRAR JOB
+            try{await database.query('DELETE FROM got.jobs WHERE id_job = $1', [jobs[this.index].id_job])}
+            catch(delete_jobs){ if(delete_jobs != undefined){ ejecucion = 1} console.log("fallo en borrar jobs")}
         }
-        catch(error){console.log("deleteJobs > borrando job ->", error)}
-    
-        //Respuestas
-        if (ejecucion == 0){
-            res.status(201);
-            res.json({
-                mensaje: 'Jobs y errores asociados eliminados correctamente'
-            })
-        } else {
-            res.status(203);
-            res.json({
-                mensaje: 'Error inesperado, por favor compruebe los datos'
-            })
-        }
+    } catch(error) {
+        console.log("deleteJobs ->", error)
+    }
+
+    //ENVIAR RESPUESTAS
+    if (ejecucion == 0){
+        res.status(201);
+        res.json({
+            mensaje: 'Jobs y errores asociados eliminados correctamente'
+        })
+    } else {
+        res.status(203);
+        res.json({
+            mensaje: 'Error inesperado, por favor compruebe los datos'
+        })
     }
 };
 
