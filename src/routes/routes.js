@@ -21,6 +21,7 @@ const   {
         deleteJobs,
         getJobExtent,
         getJobParameters,
+        getJobById,
         postJobs,
         getJobs,
         updateJobs,
@@ -60,7 +61,8 @@ const   {
         router.get('/jobExtent/:job', getJobExtent)                     
         router.get('/jobs', getJobs);                                   
         router.get('/conexion', compruebaConexion);                     
-        router.get('/jobParameters', getJobParameters);                 
+        router.get('/jobParameters', getJobParameters);    
+        router.get('/getJobById/:job', getJobById)             
         router.get('/errorParameters', getErrorParameters);             
         router.get('/expedientes/', getExpedientes);                   
         router.get('/erroresEstado/:estado', getErrorByEstado)         

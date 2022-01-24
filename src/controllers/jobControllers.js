@@ -153,6 +153,22 @@ const getJobParameters = async (req, res) => {
 
 }
 
+const getJobById = async (req, res) => {
+    try{
+        const job = req.params.job;
+        const response = await database.query("SELECT * FROM got.v_jobs WHERE job = $1",[job])
+
+        if(response.rowCount > 0){
+            res.status(201);
+            res.json({
+                job: response.rows[0],
+            })
+        }
+    } catch(error){
+        console.log("getJobById ->", error)
+    }
+}
+
 const postJobs = async (req, res) => {
     try{
         const arrayCreados = [];
@@ -263,6 +279,7 @@ module.exports = {
     getJobExtent,
     getJobs,
     getJobParameters,
+    getJobById,
     postJobs,
     updateJobs,
 };
