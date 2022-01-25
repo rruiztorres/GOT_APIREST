@@ -227,8 +227,7 @@ const updateJobs = async (req, res) => {
         const geometriaJSON = actualizarJob.geometria_json;
         const jobGrande = actualizarJob.job_grande;
         const idJob = await database.query ("SELECT id_job FROM got.jobs WHERE job = $1",[actualizarJob.job])
-        
-    
+           
         //Insercion en BD
         const response = await database.query('UPDATE got.jobs SET descripcion = $1, id_gravedad = $2, id_deteccion = $3, id_arreglo = $4, geometria = ST_GeomFromText($5 \,\'3857\'), id_tipo_bandeja = $6, id_asignacion_job = $7, id_operador = $8, id_expediente = $9, geometria_json = $10, job_grande = $11 WHERE id_job = $12;',[
             descripcion,

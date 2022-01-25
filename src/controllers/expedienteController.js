@@ -23,6 +23,11 @@ const postExpediente = async (req, res) => {
         expediente.observaciones,
         expediente.finalizado,
     ])
+
+    //RECARGAR VARIABLES GLOBALES
+    const getTransformArrays = require("../dist/transformArray");
+    global.params = getTransformArrays();  
+
     res.status(201)
     res.json({
         mesaje: 'insercion realizada correctamente',

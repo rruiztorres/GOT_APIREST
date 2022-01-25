@@ -92,6 +92,7 @@ module.exports = function getTransformArrays() {
         global.viaEntrada = response.rows
     }
     getViaEntrada();
-}
 
     console.log("[params] Variables globales actualizadas")
+}
+
