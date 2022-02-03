@@ -1,7 +1,6 @@
 const { Pool } = require("pg");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
-const { response } = require("express");
 
 const check = { check: true };
 const token = jwt.sign(check, process.env.JWTKEY, { expiresIn: 1440 });
@@ -19,6 +18,9 @@ const transformer = require ("../dist/transformer");
 
 //Logger
 const newEntryLog = require("../dist/newEntryLog");
+
+//Formateo Geometrias GEOJSON to String
+const stringifyJobGeometry = require("../dist/stringifyJobGeometry");
 
 //=============================================METODOS==================================================//
 
@@ -99,7 +101,7 @@ const getJobExtent = async (req,res) => {
 
 const getJobs = async (req, res) => {
     try{
-        const response = await database.query("SELECT * FROM got.v_jobs ORDER BY id_job");
+        const response = await database.query("SELECT id_job, expediente, job, descripcion, gravedad_job, deteccion_job, arreglo_job, estado, tipo_bandeja, asignacion_job, nombre_operador, ST_AsGeoJSON(geometria) as geometria, job_grande, alarma FROM got.v_jobs ORDER BY id_job");
         if (response.rowCount !== 0) {
             for (index in response.rows){
                 let resume = response.rows[index].descripcion;
@@ -112,6 +114,12 @@ const getJobs = async (req, res) => {
                     response.rows[index].bloqueado = bloqueado;
                 }
             };
+
+            //FORMATEO GEOJSON STRING TO JSON
+            for(this.index in response.rows){
+                response.rows[this.index].geometria = JSON.parse(response.rows[this.index].geometria)
+            }
+
             res.status(201);
             res.json({
                 response: response.rows,
@@ -180,15 +188,14 @@ const postJobs = async (req, res) => {
             let newId = await database.query ("SELECT to_char(serial_id + 1, 'fm000000') FROM got.serial;")
 
             //INSERCION
-            const response = await database.query("INSERT INTO got.jobs (job, descripcion, id_gravedad, id_deteccion, id_arreglo, id_estado_job, geometria, geometria_json, id_tipo_bandeja, id_asignacion_job, id_operador, id_expediente) VALUES ($1, $2, $3, $4, $5, $6, ST_GeomFromText($7 \,\'3857\'), $8, $9, $10, $11, $12 )",[
+            await database.query("INSERT INTO got.jobs (job, descripcion, id_gravedad, id_deteccion, id_arreglo, id_estado_job, geometria, id_tipo_bandeja, id_asignacion_job, id_operador, id_expediente) VALUES ($1, $2, $3, $4, $5, $6, ST_GeomFromText($7 \,\'3857\'), $8, $9, $10, $11)",[
                 year + '_' + newId.rows[0].to_char,                     //job
                 job[this.index].descripcion,                            //descripcion
                 transformer('gravedad', job[this.index].gravedad),      //id_gravedad
                 transformer('deteccion', job[this.index].detectado),    //id_deteccion
                 transformer('perfil', job[this.index].perfil),          //id_arreglo
                 transformer('estadosJobs', job[this.index].estado),     //id_estado_job
-                job[this.index].geometria,                              //geometria
-                job[this.index].geometriaJSON,                          //geometria_json
+                stringifyJobGeometry(job[this.index].geometria),        //geometria
                 transformer('asignacion', job[this.index].asignar),     //id_tipo_bandeja
                 transformer('tipoBandeja', job[this.index].tipoBandeja),//id_asignacion_job
                 transformer('operador', job[this.index].operador),      //id_operador
@@ -213,7 +220,7 @@ const postJobs = async (req, res) => {
 }
 
 const updateJobs = async (req, res) => {
-    try{   
+    try{
         const actualizarJob = req.body[0]
         const descripcion = actualizarJob.descripcion;
         const idGravedad = transformer("gravedad", actualizarJob.gravedad_job);
@@ -224,24 +231,22 @@ const updateJobs = async (req, res) => {
         const idAsignacion = transformer("asignacion",actualizarJob.asignacion_job);
         const idOperador  = transformer("operador", actualizarJob.nombre_operador);
         const idExpediente = transformer("expediente", actualizarJob.expediente);
-        const geometriaJSON = actualizarJob.geometria_json;
         const jobGrande = actualizarJob.job_grande;
-        const idJob = await database.query ("SELECT id_job FROM got.jobs WHERE job = $1",[actualizarJob.job])
-           
+        const job = actualizarJob.job;
+
         //Insercion en BD
-        const response = await database.query('UPDATE got.jobs SET descripcion = $1, id_gravedad = $2, id_deteccion = $3, id_arreglo = $4, geometria = ST_GeomFromText($5 \,\'3857\'), id_tipo_bandeja = $6, id_asignacion_job = $7, id_operador = $8, id_expediente = $9, geometria_json = $10, job_grande = $11 WHERE id_job = $12;',[
+        const response = await database.query('UPDATE got.jobs SET descripcion = $1, id_gravedad = $2, id_deteccion = $3, id_arreglo = $4, geometria = ST_GeomFromText($5 \,\'3857\'), id_tipo_bandeja = $6, id_asignacion_job = $7, id_operador = $8, id_expediente = $9, job_grande = $10 WHERE job = $11;',[
             descripcion,
             idGravedad,
             idDeteccion,
             idArreglo,
-            geometria,
+            stringifyJobGeometry(geometria),
             idTipoBandeja,
             idAsignacion,
             idOperador,
             idExpediente,
-            geometriaJSON,
             jobGrande,
-            idJob.rows[0].id_job,
+            job,
         ])
 
         if (response.rowCount > 0){
@@ -252,7 +257,7 @@ const updateJobs = async (req, res) => {
 
                 //Añade entrada a logger al insertar el job
                 //id_job, procesoJob, id_evento, usuario, observaciones, departamento, resultadoCC
-                const logger = newEntryLog(idJob.rows[0].id_job, dataLogger.procesoJob, idEventoLogger, dataLogger.usuario, dataLogger.observaciones, dataLogger.departamento,dataLogger.resultadoCC)         
+                newEntryLog(actualizarJob.id_job, dataLogger.procesoJob, idEventoLogger, dataLogger.usuario, dataLogger.observaciones, dataLogger.departamento,dataLogger.resultadoCC)         
             }
             
             res.status(201);
@@ -269,7 +274,35 @@ const updateJobs = async (req, res) => {
         console.error("updateJobs -> ", error)
     };
 }
-    
+
+const updateAsignJob = async (req, res) => {
+    try{
+        const job = req.body;
+        const idAsignacion = transformer('tipoBandeja', job.tipo_bandeja);
+        const idOperador = transformer('operador', job.operador);
+        const idJob = job.id_job;
+
+        const insercionBD = await database.query('UPDATE got.jobs SET id_asignacion_job = $1, id_operador = $2 WHERE id_job = $3',[
+            idAsignacion,
+            idOperador,
+            idJob,
+        ])
+
+        if (insercionBD.rowCount > 0){
+            res.status(201);
+            res.json({
+                mensaje: 'Job reasignado correctamente',
+            })
+        } else {
+            res.status(203);
+            res.json({
+                mensae: 'error inesperado',
+            })
+        }
+    } catch (error) {
+        console.log("updateAsignJob ->:", error)
+    }
+}
     
 
 //======================================================================================================//
@@ -281,4 +314,5 @@ module.exports = {
     getJobById,
     postJobs,
     updateJobs,
+    updateAsignJob,
 };
