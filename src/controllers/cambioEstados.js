@@ -32,8 +32,6 @@ const postCambioEstadosJob = async (req, res) => {
         const id_job = (req.body[0].id_job);
         const operador = transformer('operador', (req.body[0].nombre_operador));
 
-        const idEventoLogger = req.body[1].idEventoLogger;
-        const dataLogger = req.body[1];
         
         const response = await database.query('UPDATE got.jobs SET id_estado_job = $1, id_operador = $2 WHERE job = $3;',[
                 nuevoEstado,
@@ -43,8 +41,12 @@ const postCambioEstadosJob = async (req, res) => {
 
             if (response.rowCount != 0) {
                 //Añade entrada a logger al cambiar el estado el job
-                const logger = newEntryLog(id_job, dataLogger.procesoJob, idEventoLogger, dataLogger.usuario, dataLogger.observaciones, dataLogger.departamento,dataLogger.resultadoCC)
-            
+                if(req.body[1] != undefined){
+                    const idEventoLogger = req.body[1].idEventoLogger;
+                    const dataLogger = req.body[1];
+                    const logger = newEntryLog(id_job, dataLogger.procesoJob, idEventoLogger, dataLogger.usuario, dataLogger.observaciones, dataLogger.departamento,dataLogger.resultadoCC)
+                }
+
                 res.status(201);
                 res.json({
                     respuesta: response.rows,

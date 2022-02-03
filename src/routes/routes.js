@@ -25,6 +25,7 @@ const   {
         postJobs,
         getJobs,
         updateJobs,
+        updateAsignJob,
         } = require('../controllers/jobControllers');
 
 //METODOS DE ERROR 
@@ -55,6 +56,13 @@ const   {
         } = require('../controllers/cambioEstados');
 
 
+//DUMMY GEOPROCCESSING
+const   {
+        createVersion, 
+        reconcileVersion,
+        } = require('../controllers/geoproccessings');
+
+
 
 //definicion rutas
         //GET
@@ -76,13 +84,16 @@ const   {
         router.post('/auth/:usuario/:password', postAuth);            
         router.post('/postJobsErrores', postJobsErrores);              
         router.post('/cambioEstadosJob', postCambioEstadosJob);        
-        router.post('/postError', postError)                           
+        router.post('/postError', postError)
+        router.post('/createVersion', createVersion)                    //DUMMY    
+        router.post('/reconcileVersion', reconcileVersion)              //DUMMY
 
         //PUT
-        router.put('/updateJob', updateJobs)                            
+        router.put('/updateJob', updateJobs)
+        router.put('/updateAsignJob', updateAsignJob)                         
         router.put('/updateError', updateError)                        
         router.put('/updateExpediente', updateExpediente)
-        router.put('/cambioEstadosError', putCambioEstadosErrores);   
+        router.put('/cambioEstadosError', putCambioEstadosErrores);  
               
         
         //DELTE

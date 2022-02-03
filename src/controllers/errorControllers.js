@@ -15,8 +15,12 @@ const database = new Pool({
 
 //Transformer
 const transformer = require ("../dist/transformer");
-const { response } = require("express");
-const { parse } = require("pg-protocol");
+
+//Logger
+const newEntryLog = require("../dist/newEntryLog");
+
+//Formateo geometrias GEOJSON to String
+const stringifyErrorGeometry = require("../dist/stringifyErrorGeometry")
 
 //=============================================METODOS==================================================//
 
@@ -39,7 +43,12 @@ const getErrorParameters = async (req, res) =>{
 const getErrorByEstado = async (req, res) =>{
     try{
         const estado = req.params.estado;
-        const errores = await database.query('SELECT * FROM got.v_errores WHERE estado = $1', [ estado ]);
+        const errores = await database.query('SELECT id_error, job, error, via_ent, tema_error, tipo_error, descripcion, estado, ST_AsGeoJSON(geometria) as geometria FROM got.v_errores WHERE estado = $1', [ estado ]);
+
+        //FORMATEO GEOMETRIA STRING TO JSON
+        for (this.index in errores.rows){
+            errores.rows[this.index].geometria = JSON.parse(errores.rows[this.index].geometria)
+        }
 
         if (errores.rowCount > 0) {
             res.status(201);
@@ -60,7 +69,12 @@ const getErrorByEstado = async (req, res) =>{
 const getErrorByIdJob = async (req, res) =>{
     try{
         const idJob = req.params.idJob;
-        const errores = await database.query('SELECT * FROM got.v_errores WHERE job = $1', [ idJob ]);
+        const errores = await database.query('SELECT id_error, job, error, via_ent, tema_error, tipo_error, descripcion, estado, ST_AsGeoJSON(geometria) as geometria FROM got.v_errores WHERE job = $1', [ idJob ]);
+
+        //FORMATEO GEOJSON STRING TO JSON
+        for (this.index in errores.rows){
+            errores.rows[this.index].geometria = JSON.parse(errores.rows[this.index].geometria)
+        }
 
         if (errores.rowCount > 0) {
             res.status(201);
@@ -85,15 +99,14 @@ const updateError = async (req, res) => {
         for (this.index in errores){
             let error = errores[this.index];
             //Actualización en BD
-            const response = await database.query('UPDATE got.errores SET id_job = $1, id_tema_error = $2, id_tipo_error = $3, descripcion = $4, id_estado_error = $5, geometria = ST_GeomFromText($6 \,\'3857\'), id_via_ent = $7, geometria_json = $8 WHERE error = $9;',[
+            const response = await database.query('UPDATE got.errores SET id_job = $1, id_tema_error = $2, id_tipo_error = $3, descripcion = $4, id_estado_error = $5, geometria = ST_GeomFromText($6 \,\'3857\'), id_via_ent = $7 WHERE error = $8;',[
                 error.job,                                      //id_job
                 transformer('temasError', error.tema_error),    //id_tema_error
                 transformer('tiposError', error.tipo_error),    //id_tipo_error
                 error.descripcion,                              //descripcion
                 transformer('estadosErrores', error.estado),    //id_estado
-                error.geometria,                                //geometria
+                stringifyErrorGeometry(error.geometria),        //geometria
                 transformer('viaEntrada', error.via_ent),       //id_via_ent
-                error.geometria_json,                           //geometria_json
                 error.error                                     //error
             ])
             //Respuestas a cliente
@@ -121,9 +134,16 @@ const updateError = async (req, res) => {
 const deleteError = async (req, res) => {
     try {
         const error = req.body.error;
+        
+        const dataLogger = req.body.log;
+        const id_job = error.job;
+
         //Borrar antes en tabla de tiempos_error
-        const borrarTiemposError = await database.query('DELETE FROM got.t_errores WHERE id_error = $1', [error.id_error])
+        await database.query('DELETE FROM got.t_errores WHERE id_error = $1', [error.id_error])
         const borrarError = await database.query ('DELETE FROM got.errores WHERE error = $1', [error.error]);
+
+        //Entrada Log
+        newEntryLog(id_job, dataLogger.procesoJob, dataLogger.idEventoLogger, dataLogger.usuario, dataLogger.observaciones, dataLogger.departamento,dataLogger.resultadoCC)
 
         if (borrarError.rowCount > 0) {
             res.status(201);
@@ -176,7 +196,7 @@ const postError = async (req, res) => {
                 transformer('tiposError', error.tipo_error),  //id_tipo_error
                 error.descripcion,                            //descripcion
                 transformer('estadosErrores', error.estado),  //id_estado_error
-                error.geometria,                              //geometria
+                stringifyErrorGeometry(error.geometria),      //geometria
                 transformer('viaEntrada', error.via_ent),     //id_via_ent
                 error.geometria_json,                         //geometria_json
             ])
