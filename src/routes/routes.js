@@ -31,6 +31,7 @@ const   {
 //METODOS DE ERROR 
 const   {
         getErrorParameters,
+        getErrors,
         getErrorByEstado,
         getErrorByIdJob,
         updateError,
@@ -72,7 +73,8 @@ const   {
         router.get('/jobParameters', getJobParameters);    
         router.get('/getJobById/:job', getJobById)             
         router.get('/errorParameters', getErrorParameters);             
-        router.get('/expedientes/', getExpedientes);                   
+        router.get('/expedientes/', getExpedientes); 
+        router.get('/errores', getErrors)                  
         router.get('/erroresEstado/:estado', getErrorByEstado)         
         router.get('/error/:idJob', getErrorByIdJob);                   
         router.get('/expediente/:expediente', getExpedienteById)       

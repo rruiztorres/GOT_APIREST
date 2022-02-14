@@ -40,6 +40,28 @@ const getErrorParameters = async (req, res) =>{
 
 }
 
+const getErrors = async (req, res) => {
+    try{
+        const response = await database.query('SELECT * FROM got.v_errores');
+        const errores = response.rows
+        
+        if(response.rowCount > 0){
+            res.status(201);
+            res.json({
+                errores,
+            })
+        } else {
+            res.status(203);
+            res.json({
+                errores: null,
+            })
+        }
+
+    } catch(error) {
+        console.log("getErrors -> ", error);
+    }
+}
+
 const getErrorByEstado = async (req, res) =>{
     try{
         const estado = req.params.estado;
@@ -234,6 +256,7 @@ const postError = async (req, res) => {
 //======================================================================================================//
 module.exports = {
     getErrorParameters,
+    getErrors,
     getErrorByEstado,
     getErrorByIdJob,
     updateError,
