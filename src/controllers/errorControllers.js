@@ -42,8 +42,13 @@ const getErrorParameters = async (req, res) =>{
 
 const getErrors = async (req, res) => {
     try{
-        const response = await database.query('SELECT * FROM got.v_errores');
+        const response = await database.query('SELECT id_error, job, error, via_ent, tema_error, tipo_error, descripcion, estado, ST_AsGeoJSON(geometria) as geometria FROM got.v_errores');
         const errores = response.rows
+
+        //FORMATEO GEOJSON STRING TO JSON
+        for(this.index in response.rows){
+            response.rows[this.index].geometria = JSON.parse(response.rows[this.index].geometria)
+        }
         
         if(response.rowCount > 0){
             res.status(201);
