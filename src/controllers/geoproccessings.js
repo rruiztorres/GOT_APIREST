@@ -55,6 +55,8 @@ const createVersion = async (req, res) => {
     setTimeout(response, 5000)
 }
 
+
+
 const reconcileVersion = async (req, res) => {
     const job = req.body[0];
     const resultado = Math.round((Math.random()))
@@ -65,10 +67,18 @@ const reconcileVersion = async (req, res) => {
             job.id_job,
         ])
     } else {
-        await database.query ('UPDATE got.jobs SET id_estado_job = $1 WHERE id_job = $2', [
-            transformer('estadosJobs', 'Error_fin para usuario'),
-            job.id_job,
-        ])
+        this.resultado = Math.round((Math.random()))
+        if (this.resultado === 0){
+            await database.query ('UPDATE got.jobs SET id_estado_job = $1 WHERE id_job = $2', [
+                transformer('estadosJobs', 'Error_fin para usuario'),
+                job.id_job,
+            ])
+        } else {
+            await database.query ('UPDATE got.jobs SET id_estado_job = $1 WHERE id_job = $2', [
+                transformer('estadosJobs', 'Error_fin para soporte'),
+                job.id_job,
+            ])
+        }
     }
 
     function response(resultado){

@@ -216,7 +216,7 @@ const postError = async (req, res) => {
             error.error = newIdError
             
             //Insertamos en base de datos
-            const insertErrorBD = await database.query('INSERT INTO got.errores (id_job, error, id_tema_error, id_tipo_error, descripcion, id_estado_error, geometria, id_via_ent, geometria_json) VALUES ($1, $2, $3, $4, $5, $6, ST_GeomFromText($7 \,\'3857\'), $8, $9)', [
+            const insertErrorBD = await database.query('INSERT INTO got.errores (id_job, error, id_tema_error, id_tipo_error, descripcion, id_estado_error, geometria, id_via_ent) VALUES ($1, $2, $3, $4, $5, $6, ST_GeomFromText($7 \,\'3857\'), $8)', [
                 error.job,                                    //id_job
                 error.error,                                  //error
                 transformer('temasError', error.tema_error),  //id_tema_error
@@ -225,7 +225,6 @@ const postError = async (req, res) => {
                 transformer('estadosErrores', error.estado),  //id_estado_error
                 stringifyErrorGeometry(error.geometria),      //geometria
                 transformer('viaEntrada', error.via_ent),     //id_via_ent
-                error.geometria_json,                         //geometria_json
             ])
 
             //Comprueba insercion correcta
