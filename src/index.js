@@ -13,8 +13,18 @@ const morgan = require('morgan');
     app.use(express.json());
     //si queremos enviar archivos como fotos y demas extended: true
     app.use(express.urlencoded({extended: false}));
-    //Logger
-    app.use(morgan(':date[web]  |   :remote-addr    |   :method |   :status |   :url    |   :response-time ms'));
+
+
+    //LOGGER
+        //ZONA HORARIA -logger
+        const moment = require('moment-timezone');
+        morgan.token('date', (req, res, tz) => {
+            return moment().tz(tz).format();
+        })
+
+    app.use(morgan(':date[Europe/Madrid]  |   :remote-addr    |   :method |   :status |   :url    |   :response-time ms'));
+
+    
     //Manejo errores
     app.use(function errorHandler(err, req, res, next) {
         res.status(500);
@@ -23,6 +33,7 @@ const morgan = require('morgan');
 
 //OTRAS CONFIGURACIONES
     app.set('json spaces', 3);
+
 
 // CABECERAS + CORS
     app.use((req, res, next) => {
@@ -38,11 +49,13 @@ const morgan = require('morgan');
 
 //PORT (Si no hay un puerto predefinido utilizamos el 3000)
     const puerto = process.env.puerto || 3000;
+    const fechaServer = moment().tz('Europe/Madrid').format()
     app.listen(puerto, ()=>{
         console.log("[morgan] logger ready...")
         console.log("");
         console.log('===============================================================')
         console.log('Bienvenido a GOT API REST...Preparada y escuchando puerto ' + puerto)
+        console.log('Fecha actual: ' + fechaServer)
         console.log('Esperando peticiones...')
         console.log('===============================================================')
         console.log("");
