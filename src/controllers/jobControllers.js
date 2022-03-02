@@ -177,6 +177,35 @@ const getJobById = async (req, res) => {
     }
 }
 
+const getJobsByExpediente = async (req, res) => {
+    try{
+        const expediente = req.params.expediente;
+        const response = await database.query("SELECT id_job, expediente, job, descripcion, gravedad_job, deteccion_job, arreglo_job, estado, tipo_bandeja, asignacion_job, nombre_operador, ST_AsGeoJSON(geometria) as geometria, job_grande, alarma FROM got.v_jobs WHERE expediente = $1", [expediente])
+        if(response.rowCount > 0){
+            const jobs = response.rows;
+
+            //FORMATEO GEOJSON STRING TO JSON
+            for(this.index in response.rows){
+                response.rows[this.index].geometria = JSON.parse(response.rows[this.index].geometria)
+            }
+            
+            res.status(201);
+            res.json({
+                jobs,
+            })
+        } else {
+            res.status(203);
+            res.json({
+                mensaje: 'No existen jobs asociados al expediente'
+            })
+        }
+    } catch(error){
+        console.log("getJobsByExpediente -> ", error)
+    }
+    
+    
+}
+
 const postJobs = async (req, res) => {
     try{
         const arrayCreados = [];
@@ -312,6 +341,7 @@ module.exports = {
     getJobs,
     getJobParameters,
     getJobById,
+    getJobsByExpediente,
     postJobs,
     updateJobs,
     updateAsignJob,

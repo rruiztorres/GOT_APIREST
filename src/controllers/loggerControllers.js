@@ -18,9 +18,13 @@ const database = new Pool({
 const getLogByJob = async(req,res) => {
     const job = req.params.job;
     try {
-        const response = await database.query('SELECT codigo, job, evento, descripcion, fecha FROM got.v_logs WHERE job = $1 ORDER BY fecha DESC', [
+        const response = await database.query('SELECT codigo, job, evento, id_evento, descripcion, fecha FROM got.v_logs WHERE job = $1 ORDER BY fecha DESC;', [
             job
         ])
+        for (this.index in response.rows){
+            response.rows[this.index].fecha = response.rows[this.index].fecha.toString();
+        }
+
         if (response.rowCount > 0){
             res.status(201);
             res.json({

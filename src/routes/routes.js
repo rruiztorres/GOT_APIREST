@@ -22,6 +22,7 @@ const   {
         getJobExtent,
         getJobParameters,
         getJobById,
+        getJobsByExpediente,
         postJobs,
         getJobs,
         updateJobs,
@@ -68,7 +69,8 @@ const   {
 //definicion rutas
         //GET
         router.get('/jobExtent/:job', getJobExtent)                     
-        router.get('/jobs', getJobs);                                   
+        router.get('/jobs', getJobs);  
+        router.get('/getJobsByExp/:expediente', getJobsByExpediente);                                 
         router.get('/conexion', compruebaConexion);                     
         router.get('/jobParameters', getJobParameters);    
         router.get('/getJobById/:job', getJobById)             
