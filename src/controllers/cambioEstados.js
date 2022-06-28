@@ -3,14 +3,14 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 
 const check = { check: true };
-const token = jwt.sign(check, process.env.JWTKEY, { expiresIn: 1440 });
+const token = jwt.sign(check, `${process.env.JWTKEY}`, {expiresIn: 1440});
 
-const database = new Pool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_DATABASE,
-    port: process.env.DB_PORT,
+const database = new Pool( {
+    host: `${process.env.DB_HOST}`,
+    user: `${process.env.DB_USER}`,
+    password: `${process.env.DB_PASSWORD}`,
+    database: `${process.env.DB_DATABASE}`,
+    port: `${process.env.DB_PORT}`
 });
 
 
@@ -32,7 +32,8 @@ const postCambioEstadosJob = async (req, res) => {
         const id_job = (req.body[0].id_job);
         const operador = transformer('operador', (req.body[0].nombre_operador));
 
-        
+        console.log(job, id_job, operador)
+
         const response = await database.query('UPDATE got.jobs SET id_estado_job = $1, id_operador = $2 WHERE job = $3;',[
                 nuevoEstado,
                 operador,
@@ -62,7 +63,7 @@ const postCambioEstadosJob = async (req, res) => {
                 })
             }
     } catch(error){
-        console.error(error);
+        console.error("postCambioEstadosJob: -> ", error);
     }
 };
 

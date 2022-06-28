@@ -104,4 +104,13 @@ module.exports = function (nameObjeto, value) {
             }
         }
     }
+
+    //ROLES
+    else if (nameObjeto === 'roles'){
+        for (this.index in roles){
+            if (roles[this.index].rol === value){
+                return roles[this.index].id_rol
+            }
+        }
+    }
 };

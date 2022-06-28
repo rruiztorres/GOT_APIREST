@@ -3,7 +3,7 @@ const app = express();
 const morgan = require('morgan');
 
 
-//api web -> montar web con metodos y demás
+//api web -> montar web con metodos y demás. TODO: Pasar a swagger?
     app.get("/api", (req, res) => {
         res.sendFile(__dirname + '/webapi/index.html');
     });

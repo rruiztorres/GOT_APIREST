@@ -3,14 +3,14 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 
 const check = { check: true };
-const token = jwt.sign(check, process.env.JWTKEY, { expiresIn: 1440 });
+const token = jwt.sign(check, `${process.env.JWTKEY}`, {expiresIn: 1440});
 
-const database = new Pool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_DATABASE,
-    port: process.env.DB_PORT,
+const database = new Pool( {
+    host: `${process.env.DB_HOST}`,
+    user: `${process.env.DB_USER}`,
+    password: `${process.env.DB_PASSWORD}`,
+    database: `${process.env.DB_DATABASE}`,
+    port: `${process.env.DB_PORT}`
 });
 
 //Transformer
@@ -35,7 +35,7 @@ const getErrorParameters = async (req, res) =>{
             tipo: tipoError.rows,
         })
     } catch(error){
-        console.log("getErrorParameters -> ", error)
+        console.error("getErrorParameters -> ", error)
     }
 
 }
@@ -63,7 +63,7 @@ const getErrors = async (req, res) => {
         }
 
     } catch(error) {
-        console.log("getErrors -> ", error);
+        console.error("getErrors -> ", error);
     }
 }
 
@@ -89,7 +89,7 @@ const getErrorByEstado = async (req, res) =>{
             })
         }
     } catch(error){
-        console.log("getErrorByIdJob -> ", error)
+        console.error("getErrorByIdJob -> ", error)
     }
 }
 
@@ -115,7 +115,7 @@ const getErrorByIdJob = async (req, res) =>{
             })
         }
     } catch(error){
-        console.log("getErrorByIdJob -> ", error)
+        console.error("getErrorByIdJob -> ", error)
     }
 }
 
@@ -154,7 +154,7 @@ const updateError = async (req, res) => {
             })
         }
     } catch (error){
-        console.log("updateError -> ", error)
+        console.error("updateError -> ", error)
     }
 }
 
@@ -185,7 +185,7 @@ const deleteError = async (req, res) => {
         }
 
     } catch (error) {
-        console.log(error)
+        console.error("deleteError: ->", error)
     }
 }
 
@@ -252,7 +252,7 @@ const postError = async (req, res) => {
         }
 
     } catch(error){
-        console.log("metodo postErrores -> ", error)
+        console.error("metodo postErrores -> ", error)
     }
 }
 

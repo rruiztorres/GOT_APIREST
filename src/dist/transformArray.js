@@ -93,6 +93,13 @@ module.exports = function getTransformArrays() {
     }
     getViaEntrada();
 
+    //ROLES
+    const getRoles = async () => {
+        const response = await database.query('SELECT id_rol, rol FROM got.roles')
+        global.roles = response.rows
+    }
+    getRoles();
+
     console.log("[params] Variables globales actualizadas")
 }
 

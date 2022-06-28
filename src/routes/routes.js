@@ -5,6 +5,11 @@ const router = Router();
 //METODOS DE USUARIO
 const   {
         postAuth,
+        postUser,
+        putUser,
+        getUsers,
+        getUserRoles,
+        getRoles,
         compruebaConexion,
         } = require('../controllers/userControllers');
 
@@ -14,6 +19,7 @@ const   {
         getExpedientes,
         getExpedienteById,
         updateExpediente,
+        deleteExpediente,
         } = require('../controllers/expedienteController');
 
 //METODOS DE JOBS
@@ -41,9 +47,9 @@ const   {
         } = require('../controllers/errorControllers');
 
 //METODOS LOGGER
-const {
+const   {
         getLogByJob,
-} = require('../controllers/loggerControllers');
+        } = require('../controllers/loggerControllers');
 
         
 //CARGA COMBINADA JOBS / ERRORES 
@@ -81,11 +87,15 @@ const   {
         router.get('/error/:idJob', getErrorByIdJob);                   
         router.get('/expediente/:expediente', getExpedienteById)       
         router.get('/getLogByJob/:job', getLogByJob)
+        router.get('/getUsers', getUsers)
+        router.get('/getUserRoles/:user', getUserRoles)
+        router.get('/getRoles', getRoles)
 
         //POST
         router.post('/postJobs', postJobs);                           
         router.post('/expediente', postExpediente);                  
-        router.post('/auth/:usuario/:password', postAuth);            
+        router.post('/auth/:usuario/:password', postAuth); 
+        router.post('/newUser', postUser)           
         router.post('/postJobsErrores', postJobsErrores);              
         router.post('/cambioEstadosJob', postCambioEstadosJob);        
         router.post('/postError', postError)
@@ -98,11 +108,13 @@ const   {
         router.put('/updateError', updateError)                        
         router.put('/updateExpediente', updateExpediente)
         router.put('/cambioEstadosError', putCambioEstadosErrores);  
+        router.put('/updateUser', putUser)
               
         
-        //DELTE
+        //DELETE
         router.delete('/deleteJobs', deleteJobs)                       
-        router.delete('/deleteError', deleteError)                      
+        router.delete('/deleteError', deleteError)    
+        router.delete('/deleteExpediente', deleteExpediente)                  
 
         
 module.exports = router;

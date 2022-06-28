@@ -5,14 +5,14 @@ const { response } = require("express");
 
 
 const check = { check: true };
-const token = jwt.sign(check, process.env.JWTKEY, { expiresIn: 1440 });
+const token = jwt.sign(check, `${process.env.JWTKEY}`, {expiresIn: 1440});
 
-const database = new Pool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_DATABASE,
-    port: process.env.DB_PORT,
+const database = new Pool( {
+    host: `${process.env.DB_HOST}`,
+    user: `${process.env.DB_USER}`,
+    password: `${process.env.DB_PASSWORD}`,
+    database: `${process.env.DB_DATABASE}`,
+    port: `${process.env.DB_PORT}`
 });
 
 
@@ -39,11 +39,11 @@ const postJobsErrores = async (req, res) => {
         const errores = req.body.errores;
         const log = req.body.log;
 
-        //INICIALIZAR CONSTANTES GLOBALES
+        //INICIALIZAR GLOBALES
         const year = new Date().getFullYear();
         let arrayJobsCreados = [];
         let arrayErroresCreados = [];
-        const idEventoLogger = 4 //Inserción Job manual desde GOT
+        const idEventoLogger = 4                //Inserción Job manual desde GOT
 
         //EXISTEN JOBS?
         if (jobs.length > 0){
@@ -52,35 +52,22 @@ const postJobsErrores = async (req, res) => {
                 //OBTENER CODIGO JOB
                 let newIdJob = await database.query ("SELECT to_char(serial_id + 1, 'fm000000') FROM got.serial;")
                 jobs[this.longJobs].job = year + '_' + newIdJob.rows[0].to_char;
-
-                //MAPEAR DATOS DE JOB
                 let codigoJob = jobs[this.longJobs].job;
-                const expediente = transformer('expediente', jobs[this.longJobs].expediente);
-                const descripcion = jobs[this.longJobs].descripcion;
-                const gravedad_job = transformer('gravedad', jobs[this.longJobs].gravedad_job);
-                const deteccion_job = transformer('deteccion', jobs[this.longJobs].deteccion_job);
-                const arreglo_job = transformer('perfil', jobs[this.longJobs].arreglo_job);
-                const estado = transformer('estadosJobs', jobs[this.longJobs].estado);
-                const tipo_bandeja = transformer('tipoBandeja', jobs[this.longJobs].tipo_bandeja);
-                const asignacion_job = transformer('asignacion', jobs[this.longJobs].asignacion_job);
-                const nombre_operador = transformer('operador', jobs[this.longJobs].nombre_operador);
-                const geometria = jobs[this.longJobs].geometria;
-                const job_grande = jobs[this.longJobs].job_grande;
 
                 //INSERCION JOB EN BD
                 await database.query("INSERT INTO got.jobs (id_expediente, job, descripcion, id_gravedad, id_deteccion, id_arreglo, id_estado_job, id_tipo_bandeja, id_asignacion_job, id_operador, geometria, job_grande) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, ST_GeomFromText($11 \,\'3857\'), $12 )",[
-                    expediente,
-                    codigoJob,
-                    descripcion,
-                    gravedad_job,
-                    deteccion_job,
-                    arreglo_job,
-                    estado,
-                    tipo_bandeja,
-                    asignacion_job,
-                    nombre_operador,
-                    stringifyJobGeometry(geometria),
-                    job_grande,
+                    transformer('expediente', jobs[this.longJobs].expediente),
+                    jobs[this.longJobs].job,
+                    jobs[this.longJobs].descripcion,
+                    transformer('gravedad', jobs[this.longJobs].gravedad_job),
+                    transformer('deteccion', jobs[this.longJobs].deteccion_job),
+                    transformer('perfil', jobs[this.longJobs].arreglo_job),
+                    transformer('estadosJobs', jobs[this.longJobs].estado),
+                    transformer('tipoBandeja', jobs[this.longJobs].tipo_bandeja),
+                    transformer('asignacion', jobs[this.longJobs].asignacion_job),
+                    transformer('operador', jobs[this.longJobs].nombre_operador),
+                    stringifyJobGeometry(jobs[this.longJobs].geometria),
+                    jobs[this.longJobs].job_grande,
                 ]);
 
                 //OBTENER ID JOB INSERTADO Y ALMACENAMOS EN EL OBJETO
@@ -226,6 +213,6 @@ const postJobsErrores = async (req, res) => {
             })
         }
 
-    }catch(error){console.log("postJobsErrores -> ", error)}
+    }catch(error){console.error("postJobsErrores -> ", error)}
 }
 module.exports = {postJobsErrores};
